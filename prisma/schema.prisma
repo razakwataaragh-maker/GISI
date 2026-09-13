@@ -124,3 +124,30 @@ model UserRoleAssignment {
   @@index([roleId, assignedAt])
   @@map("user_role_assignments")
 }
+
+model AuditEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  eventName       String   @map("event_name")
+  category        String
+  actorId         String?  @map("actor_id")
+  actorType       String   @map("actor_type")
+  targetType      String   @map("target_type")
+  targetId        String?  @map("target_id")
+  action          String
+  outcome         String
+  occurredAt      DateTime @map("occurred_at")
+  recordedAt      DateTime @default(now()) @map("recorded_at")
+  correlationId   String?  @map("correlation_id")
+  owningModule    String   @map("owning_module")
+  sourceBoundary  String   @map("source_boundary")
+  reason          String?
+  changeReference String?  @map("change_reference")
+  beforeState     Json?    @map("before_state")
+  afterState      Json?    @map("after_state")
+
+  @@index([eventName, occurredAt])
+  @@index([actorId, occurredAt])
+  @@index([targetType, targetId, occurredAt])
+  @@index([correlationId])
+  @@map("audit_events")
+}

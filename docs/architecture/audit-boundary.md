@@ -234,3 +234,23 @@ Retention periods are policy-controlled and must be defined before the audit
 storage task is implemented. The implementation must support the approved
 institutional and legal retention policy without weakening append-only
 historical preservation.
+
+## Minimal writer implementation
+
+The generic audit capability persists events in the dedicated `audit_events`
+table. It is separate from IAM and other module-owned tables and stores the
+stable event, actor, target, outcome, timing, correlation, ownership, reason,
+change-reference, and safe before/after state fields defined above.
+
+The application-owned `AuditWriter` contract exposes only `append`. Its
+infrastructure implementation validates event payload keys recursively before
+writing through Prisma and rejects prohibited credentials, tokens, connection
+strings, provider errors, stack traces, and similar sensitive fields. It does
+not define IAM-specific event names.
+
+The migration installs a PostgreSQL trigger that rejects `UPDATE` and `DELETE`
+on `audit_events`, providing database-level immutability in the current
+single-role local setup. Separate database roles with insert-only grants,
+ownership separation, and restricted administrative access remain deployment
+hardening work; the trigger is not represented as a claim that the local
+`postgres` superuser cannot bypass database controls.
