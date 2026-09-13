@@ -20,9 +20,10 @@ The following tasks are currently marked `done` in the `todos` table:
    infrastructure-as-code baseline.
 3. `configure-dependency-management` — Established dependency manifests,
    lockfile policy, runtime policy, and reproducible installation commands.
-4. `configure-development-quality-tools` — Configured formatting, linting,
-   type checking, static analysis, editor conventions, and local quality
-   commands.
+4. `configure-development-quality-tools` — Implemented and installed ESLint,
+   Prettier, `.editorconfig`, and the `lint`, `format`, `format:check`, and
+   `typecheck` npm scripts; all quality checks pass as of commit
+   `93410e3ba8fe65e1f318cc710ffe16c443f8c259`.
 5. `document-local-development-environment` — Documented prerequisites,
    setup, local services, database bootstrap, commands, and troubleshooting.
 6. `define-application-composition` — Defined the composition root, dependency
