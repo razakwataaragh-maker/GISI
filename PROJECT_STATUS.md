@@ -8,6 +8,33 @@ This file is a point-in-time handoff snapshot. The `todos` table remains the
 authoritative backlog and this file must not be treated as a replacement for
 it.
 
+## Backlog Storage Warning
+
+The `todos` and `todo_deps` tables are stored in a SQLite database local to each
+Copilot session at
+`~/.copilot/session-state/<session-id>/session.db`. They are not stored in the
+GISI Git repository and are not shared automatically between sessions.
+
+If a new session's eligible-task query unexpectedly returns zero rows, this does
+**not** mean the backlog is actually empty. Check for an existing populated
+`session.db` from a prior session before assuming data loss.
+
+The recovery procedure used on 2026-09-13 was to locate the prior session
+database by searching `~/.copilot/session-state/*/session.db` for one containing
+populated `todos` and `todo_deps` tables, read all source rows read-only, and
+insert them into the new session's own tables using explicit `BEGIN`/`COMMIT`
+transactions. The `id`, `status`, and timestamps were preserved exactly; no
+statuses were reset.
+
+`PROJECT_STATUS.md` itself, committed to Git, is the true durable source of
+truth for which tasks are complete. The session database is a convenient
+working tool within one session, not the permanent record. If the two ever
+disagree, `PROJECT_STATUS.md` and Git history govern.
+
+## Backlog summary
+
+The current backlog contains **39 total tasks: 31 done and 8 pending**.
+
 ## Phase 0 status
 
 Project Foundation (Phase 0) is fully complete and approved.
@@ -35,19 +62,16 @@ when the session ended. The next reviewing AI must read these files directly and
 complete that review before treating this task as fully verified, even though it
 is marked `done` in the `todos` table.
 
-## Remaining tasks in dependency order
+## Remaining Phase 1 tasks in dependency order
 
-The session `todos` and `todo_deps` queries returned no rows. Therefore, the
-following order is recorded from the current handoff state supplied for this
-snapshot, not verified from the session database. Do not treat it as authoritative
-until the standard dependency query returns the eligible task.
+The eight pending Phase 1 tasks are:
 
 1. `implement-authentication`
 2. `implement-user-management`
 3. `implement-roles-and-permissions`
-4. `implement-iam-api-endpoints`
-5. `implement-iam-audit-logging`
-6. `harden-iam-security-controls`
+4. `harden-iam-security-controls`
+5. `implement-iam-api-endpoints`
+6. `implement-iam-audit-logging`
 7. `add-iam-tests`
 8. `review-and-approve-iam`
 
