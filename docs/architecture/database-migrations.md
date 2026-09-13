@@ -41,6 +41,14 @@ Schema changes must precede application code that requires them. Destructive
 changes require explicit review. Manual changes to shared, staging, or
 production schemas are prohibited.
 
+Prisma-generated migration SQL must not be edited after a migration has been
+applied. One narrow exception is permitted: a new, unapplied migration created
+with `prisma migrate dev --create-only` may be edited before its first
+application to add PostgreSQL SQL that Prisma cannot generate from
+`schema.prisma`, such as triggers or functions. It must then be applied through
+the normal Prisma migration flow. Editing an already-applied migration or
+manually altering Prisma's checksum tracking remains strictly prohibited.
+
 All schema changes must also satisfy
 `data-integrity-conventions.md`, including explicit foreign keys, constraints,
 justified indexes, module table ownership, transaction boundaries, historical
