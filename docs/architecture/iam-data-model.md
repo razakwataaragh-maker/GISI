@@ -1,16 +1,16 @@
 # GISI Identity & Access Management Data Model
 
-- **Status:** Defined for Phase 1
-- **Scope:** Conceptual PostgreSQL/Prisma model for IAM persistence
+- **Status:** Implemented for Phase 1 persistence baseline
+- **Scope:** PostgreSQL/Prisma model for IAM persistence
 - **Governing architecture:** [IAM architecture](identity-access-management.md),
   [authentication architecture](authentication-architecture.md), and
   [authorization architecture](authorization-architecture.md)
 
 ## Purpose and boundary
 
-This document defines the conceptual entities, relationships, constraints, and
-access patterns required by the IAM module. It does not modify
-`prisma/schema.prisma`, create migrations, or define application code.
+This document defines the entities, relationships, constraints, and access
+patterns required by the IAM module. The Prisma schema and migration implement
+this model; application behavior remains out of scope.
 
 All tables described here are owned exclusively by
 `src/modules/identity-access/`. Other modules consume IAM through application
@@ -242,10 +242,22 @@ records and audit events.
 
 This task does not define:
 
-- Prisma models or `prisma/schema.prisma` changes;
-- SQL migration files;
-- concrete column types beyond the required conceptual constraints;
 - authentication or authorization implementation;
 - HTTP endpoints;
 - the separate audit-record schema;
 - Student, Finance, or other module data.
+
+## Persistence implementation
+
+The approved model is implemented in `prisma/schema.prisma` and the
+`establish_iam_persistence` migration. The implementation uses UUID primary
+keys for internal entities and a text primary key for the permission reference,
+matching the stable code-level permission identifier. User, role,
+role-permission, and user-role assignment lifecycle states are PostgreSQL enum
+types. All assignment foreign keys use `RESTRICT` for delete and update
+behavior, preserving historical rows.
+
+The implementation intentionally uses the approved minimal User shape:
+identity mapping, account status, lifecycle timestamps, status-change actor,
+and status-change reason. Display and institutional identity attributes remain
+deferred until a user-management workflow approves their ownership and fields.

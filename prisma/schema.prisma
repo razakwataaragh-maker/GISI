@@ -6,3 +6,120 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserStatus {
+  ACTIVE
+  DEACTIVATED
+  SUSPENDED
+}
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RolePermissionStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum UserRoleAssignmentStatus {
+  ACTIVE
+  REVOKED
+}
+
+model User {
+  id                String     @id @default(uuid()) @db.Uuid
+  cognitoSubject    String     @unique @map("cognito_subject")
+  status            UserStatus
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  activatedAt       DateTime?  @map("activated_at")
+  deactivatedAt     DateTime?  @map("deactivated_at")
+  suspendedAt       DateTime?  @map("suspended_at")
+  statusChangedAt   DateTime   @map("status_changed_at")
+  statusChangedBy   String     @map("status_changed_by")
+  statusChangeReason String    @map("status_change_reason")
+
+  roleAssignments UserRoleAssignment[]
+
+  @@index([status])
+  @@map("users")
+}
+
+model Role {
+  id                 String     @id @default(uuid()) @db.Uuid
+  key                String     @unique
+  name               String
+  description        String?
+  status             RoleStatus
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  createdBy          String     @map("created_by")
+  updatedBy          String     @map("updated_by")
+  deactivatedAt      DateTime?  @map("deactivated_at")
+  deactivatedBy      String?    @map("deactivated_by")
+  deactivationReason String?    @map("deactivation_reason")
+  changeReference    String?    @map("change_reference")
+
+  permissions     RolePermission[]
+  userAssignments UserRoleAssignment[]
+
+  @@index([status])
+  @@map("roles")
+}
+
+model PermissionReference {
+  id          String           @id
+  rolePermissions RolePermission[]
+
+  @@map("permission_references")
+}
+
+model RolePermission {
+  id                 String               @id @default(uuid()) @db.Uuid
+  roleId             String               @map("role_id") @db.Uuid
+  permissionId       String               @map("permission_id")
+  status             RolePermissionStatus
+  assignedAt         DateTime             @map("assigned_at")
+  assignedBy         String               @map("assigned_by")
+  revokedAt          DateTime?            @map("revoked_at")
+  revokedBy          String?              @map("revoked_by")
+  revocationReason   String?              @map("revocation_reason")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  changeReference    String?              @map("change_reference")
+
+  role       Role               @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  permission PermissionReference @relation(fields: [permissionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId, status])
+  @@index([permissionId, status])
+  @@map("role_permissions")
+}
+
+model UserRoleAssignment {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  userId             String                    @map("user_id") @db.Uuid
+  roleId             String                    @map("role_id") @db.Uuid
+  status             UserRoleAssignmentStatus
+  assignedAt         DateTime                  @map("assigned_at")
+  assignedBy         String                    @map("assigned_by")
+  revokedAt          DateTime?                 @map("revoked_at")
+  revokedBy          String?                   @map("revoked_by")
+  assignmentReason   String                    @map("assignment_reason")
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @updatedAt @map("updated_at")
+  changeReference    String?                   @map("change_reference")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([userId, status])
+  @@index([roleId, status])
+  @@index([assignedBy, assignedAt])
+  @@index([userId, assignedAt])
+  @@index([roleId, assignedAt])
+  @@map("user_role_assignments")
+}
