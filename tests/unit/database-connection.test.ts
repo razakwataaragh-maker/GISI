@@ -69,6 +69,17 @@ describe('PrismaDatabaseConnection', () => {
         }
     });
 
+    it('does not disconnect a client when connection establishment fails', async () => {
+        const client = fakeClient();
+        client.$connect.mockRejectedValueOnce(new Error('database unavailable'));
+        const connection = new PrismaDatabaseConnection(options, () => client);
+
+        await expect(connection.connect()).rejects.toBeInstanceOf(DatabaseConnectionError);
+        await connection.disconnect();
+
+        expect(client.$disconnect).not.toHaveBeenCalled();
+    });
+
     it('disconnects idempotently when it was never connected', async () => {
         const client = fakeClient();
         const connection = new PrismaDatabaseConnection(options, () => client);

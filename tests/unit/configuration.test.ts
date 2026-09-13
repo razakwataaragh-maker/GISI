@@ -81,6 +81,27 @@ describe('loadConfiguration', () => {
         ).toThrowError(/API_PORT.*PostgreSQL|LOG_LEVEL/);
     });
 
+    it.each([
+        ['NODE_ENV', { NODE_ENV: 'invalid' }, /NODE_ENV/],
+        ['AUTH_PROVIDER', { AUTH_PROVIDER: 'custom' }, /AUTH_PROVIDER/],
+        ['API_PORT', { API_PORT: 'not-a-port' }, /API_PORT/],
+        ['DATABASE_URL', { DATABASE_URL: 'mysql://localhost/gisi' }, /DATABASE_URL/],
+    ])('rejects invalid %s values', (_name, overrides, issue) => {
+        expect(() =>
+            loadConfiguration({
+                environment: { ...validEnvironment, ...overrides },
+            }),
+        ).toThrowError(issue);
+    });
+
+    it('rejects a missing required database URL', () => {
+        const { DATABASE_URL: _databaseUrl, ...environmentWithoutDatabase } = validEnvironment;
+
+        expect(() => loadConfiguration({ environment: environmentWithoutDatabase })).toThrowError(
+            /DATABASE_URL is required/,
+        );
+    });
+
     it('keeps Cognito configuration behind the authentication infrastructure boundary', () => {
         const configuration = loadConfiguration({ environment: validEnvironment });
         const cognito = loadCognitoConfiguration(validCognitoEnvironment);

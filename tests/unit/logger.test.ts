@@ -54,8 +54,16 @@ describe('structured logger', () => {
             {
                 password: 'password-value',
                 token: 'token-value',
-                DATABASE_URL: 'postgresql://user:secret@localhost/db',
-                authorization: 'Bearer secret-token',
+                accessToken: 'access-token-value',
+                refreshToken: 'refresh-token-value',
+                clientSecret: 'client-secret-value',
+                DATABASE_URL: 'postgresql://user:password@localhost/db',
+                databaseUrl: 'postgresql://user:password@localhost/db',
+                authorization: 'Bearer token-value',
+                nested: {
+                    password: 'nested-password-value',
+                    token: 'nested-token-value',
+                },
                 safeValue: 'retained',
             },
             'Sensitive values supplied',
@@ -65,12 +73,21 @@ describe('structured logger', () => {
         expect(record).toMatchObject({
             password: '[REDACTED]',
             token: '[REDACTED]',
+            accessToken: '[REDACTED]',
+            refreshToken: '[REDACTED]',
+            clientSecret: '[REDACTED]',
             DATABASE_URL: '[REDACTED]',
+            databaseUrl: '[REDACTED]',
             authorization: '[REDACTED]',
             safeValue: 'retained',
         });
         expect(captured.output()).not.toContain('password-value');
-        expect(captured.output()).not.toContain('secret-token');
+        expect(captured.output()).not.toContain('access-token-value');
+        expect(captured.output()).not.toContain('refresh-token-value');
+        expect(captured.output()).not.toContain('client-secret-value');
+        expect(captured.output()).not.toContain('postgresql://user:password@localhost/db');
+        expect(captured.output()).not.toContain('nested-password-value');
+        expect(captured.output()).not.toContain('nested-token-value');
     });
 
     it('filters messages below the configured severity', () => {

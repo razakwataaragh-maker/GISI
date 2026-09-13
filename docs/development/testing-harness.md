@@ -54,7 +54,10 @@ such as `RUN_DATABASE_INTEGRATION_TESTS=true`, and a safe configured
 `DATABASE_URL`. They are skipped by default when infrastructure is unavailable;
 they must not silently substitute SQLite or a shared developer database.
 Future integration suites must document their equivalent gate and required
-services.
+services. Prisma migration application and live database validation remain
+deferred until a PostgreSQL instance is explicitly provisioned; the existing
+unit tests validate the connection boundary without fabricating integration
+success.
 
 ## Adding tests
 
