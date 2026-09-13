@@ -43,6 +43,25 @@ GET /version
 
 These operational endpoints are outside the business API prefix because they are consumed by infrastructure and deployment tooling. If a versioned operational API is later required, it must be introduced as a documented compatibility decision.
 
+### Version response
+
+`GET /version` is public and does not require user authentication. It remains
+inside the standard correlation-ID and centralized error-handling pipeline.
+The response contains only controlled application metadata:
+
+```json
+{
+  "name": "gisi",
+  "version": "0.1.0",
+  "buildIdentity": "gisi@0.1.0"
+}
+```
+
+`buildIdentity` is deterministically composed from the validated application
+name and version. The endpoint does not read `package.json` at runtime and
+does not expose dependency versions, hostnames, paths, or infrastructure
+metadata.
+
 Breaking changes require a new major API version, for example `/api/v2`. Backward-compatible additions may be made within `/api/v1`.
 
 ## URL and route structure
@@ -85,4 +104,3 @@ Rules:
 | DELETE | Delete only where the domain explicitly permits it; prefer archival/state transitions for historical records |
 
 State transitions such as activation, suspension, publication, verification, approval, and rejection use explicit `POST` action endpoints where defined by the SRS.
-
