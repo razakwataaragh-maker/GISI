@@ -19,8 +19,8 @@ is the identifier resolved by the existing `X-Correlation-ID` request lifecycle
 boundary.
 
 Error responses use `application/json` and lower camel case property names.
-The future API error boundary must preserve the request correlation ID even when
-it handles an unexpected failure.
+The implemented Fastify API error boundary preserves the request correlation ID
+even when it handles an unexpected failure.
 
 ## Standard error codes
 
@@ -85,19 +85,19 @@ Public messages must be stable and caller-safe. Internal logs may contain
 diagnostic context only under the structured logging redaction policy and must
 include the same correlation ID.
 
-## Consumption by the API error boundary
+## Implemented API error boundary
 
-The future `implement-api-error-boundary` task must:
+The central Fastify error boundary:
 
-1. Translate recognized framework, validation, authentication, authorization,
+1. Translates recognized framework, validation, authentication, authorization,
    domain, dependency, and persistence failures into this taxonomy.
-2. Set the exact mapped HTTP status.
-3. Use the existing request correlation ID; it must not create another
+2. Sets the exact mapped HTTP status.
+3. Uses the existing request correlation ID; it does not create another
    correlation mechanism.
-4. Return the binding four-property JSON shape.
-5. Log unexpected/internal diagnostics through the injected structured logger.
-6. Redact provider details before logging and never return them to callers.
-7. Convert unknown failures to `INTERNAL_ERROR` with a safe message and empty
+4. Returns the binding four-property JSON shape.
+5. Logs unexpected/internal diagnostics through the injected structured logger.
+6. Redacts provider details before logging and never returns them to callers.
+7. Converts unknown failures to `INTERNAL_ERROR` with a safe message and empty
    details.
 
 Routes and controllers must not implement their own competing error envelopes
