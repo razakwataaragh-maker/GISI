@@ -67,32 +67,32 @@ The following tasks are currently marked `done` in the `todos` table:
 21. `define-audit-boundary` — Defined immutable audit records, event
     categories, ownership, retention, safe fields, and separation from
     operational logs.
+22. `configure-continuous-integration` — Implemented GitHub Actions CI on
+    every pull request and push to `master`, covering installation, formatting,
+    linting, type checking, Prisma validation/generation, ephemeral PostgreSQL
+    migrations, the full test suite with coverage, dependency audit, secret
+    scanning, and coverage artifacts; merged to `master` as `bda699f`.
 
 ## Remaining tasks in dependency order
 
-These are the four tasks currently marked `pending`. Their dependency order is
+These are the three tasks currently marked `pending`. Their dependency order is
 determined from `todo_deps`; do not begin a task until the standard eligible
 task query identifies it.
 
-1. `configure-continuous-integration` — Create CI checks for installation,
-   formatting, linting, type checking, tests, migrations, architecture rules,
-   security scans, secret scans, and artifacts.
-   - Depends on: `add-foundation-tests` (`done`) and
-     `establish-security-baseline` (`done`).
-2. `define-continuous-delivery` — Define immutable artifacts, environment
+1. `define-continuous-delivery` — Define immutable artifacts, environment
    promotion, approvals, configuration injection, migration sequencing,
    health verification, rollback, and AWS deployment boundaries.
-   - Depends on: `configure-continuous-integration` (`pending`).
-3. `complete-foundation-documentation` — Complete README and architecture,
+   - Depends on: `configure-continuous-integration` (`done`).
+2. `complete-foundation-documentation` — Complete README and architecture,
    API, configuration, database, logging, testing, security, CI/CD,
    deployment, rollback, backup, and recovery documentation.
    - Depends on: `define-audit-boundary` (`done`),
      `document-local-development-environment` (`done`), and
      `define-continuous-delivery` (`pending`).
-4. `review-and-approve-foundation` — Run the foundation checklist,
+3. `review-and-approve-foundation` — Run the foundation checklist,
    architecture and security reviews, acceptance verification, risk review,
    and the readiness gate for Identity and Access Management.
-   - Depends on: `configure-continuous-integration` (`pending`) and
+   - Depends on: `configure-continuous-integration` (`done`) and
      `complete-foundation-documentation` (`pending`).
 
 ## Key architectural decisions
@@ -137,9 +137,11 @@ database, and AWS is the initial cloud target.
 
 ## Known deferred items
 
-- No live PostgreSQL instance has been provisioned yet. Integration tests and
-  live migration checks remain explicitly deferred; they must not be
-  fabricated or replaced with SQLite.
+- No persistent local, staging, or production PostgreSQL instance has been
+  provisioned yet. CI now runs integration tests and live migration checks
+  against a temporary, ephemeral PostgreSQL service for each workflow run;
+  these checks must not be fabricated or replaced with SQLite outside that
+  CI service.
 - `buildIdentity` from the version endpoint is currently the intentional
   placeholder `name@version`, pending real Git SHA or CI build metadata.
 
