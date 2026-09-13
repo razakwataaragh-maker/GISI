@@ -56,6 +56,9 @@ The exact response schema belongs to each module's OpenAPI contract.
 
 ## Error responses
 
+The complete public error taxonomy and status mapping are binding in
+`docs/api/error-taxonomy.md`.
+
 All errors use:
 
 ```json
@@ -74,4 +77,3 @@ Rules:
 - `details` contains structured validation or conflict information where appropriate.
 - `correlationId` identifies the request for support and diagnostics.
 - Stack traces, secrets, SQL, provider responses, and internal implementation details are never returned.
-
