@@ -28,4 +28,3 @@ Editor settings must support, not override, repository CI standards.
 ## No editor-only behavior
 
 Code must remain valid when checked in CI or built on a clean Ubuntu environment. Developer-specific editor settings must not be required for correctness.
-

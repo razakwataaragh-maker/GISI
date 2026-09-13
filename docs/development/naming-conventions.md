@@ -46,4 +46,3 @@ registration-status.value-object.ts
 - Test files should describe the subject under test.
 - Test names should describe behavior and expected outcome.
 - Prefer scenario-oriented names over implementation details.
-

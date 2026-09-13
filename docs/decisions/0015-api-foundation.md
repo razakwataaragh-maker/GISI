@@ -34,4 +34,3 @@ Operational endpoints `/health`, `/health/ready`, and `/version` remain outside 
 ## Consequences
 
 Clients receive a visible and stable API version, modules retain ownership, and OpenAPI/API tests can enforce contracts. URL versioning requires explicit deprecation and migration discipline for future breaking changes.
-

@@ -23,4 +23,3 @@ Use PostgreSQL 16 or later as the primary database and Prisma as the type-safe d
 ## Constraints
 
 Prisma models and repositories must not contain business rules. Module ownership, constraints, and migrations remain explicit. Important records must not be silently overwritten.
-

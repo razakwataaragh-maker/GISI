@@ -40,4 +40,3 @@ A release is blocked when:
 - A high/critical vulnerability lacks an approved exception.
 - A dependency has an incompatible or unreviewed license.
 - A prohibited package or package-manager change is introduced.
-

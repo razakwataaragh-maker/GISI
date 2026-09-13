@@ -39,4 +39,3 @@ Pre-release identifiers may be used for staging builds, for example:
 ```
 
 Pre-release artifacts must not be promoted to production without an explicit release decision.
-

@@ -28,7 +28,11 @@ export function loadCognitoConfiguration(
     });
 }
 
-function required(environment: EnvironmentVariables, key: string, issues: string[]): string | undefined {
+function required(
+    environment: EnvironmentVariables,
+    key: string,
+    issues: string[],
+): string | undefined {
     const value = environment[key]?.trim();
     if (!value) {
         issues.push(`${key} is required for Cognito authentication`);

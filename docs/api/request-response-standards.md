@@ -34,13 +34,13 @@ Successful collection responses should use a stable envelope:
 
 ```json
 {
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "pageSize": 25,
-    "totalItems": 0,
-    "totalPages": 0
-  }
+    "data": [],
+    "pagination": {
+        "page": 1,
+        "pageSize": 25,
+        "totalItems": 0,
+        "totalPages": 0
+    }
 }
 ```
 
@@ -48,7 +48,7 @@ Single-resource responses should use:
 
 ```json
 {
-  "data": {}
+    "data": {}
 }
 ```
 
@@ -63,10 +63,10 @@ All errors use:
 
 ```json
 {
-  "code": "VALIDATION_ERROR",
-  "message": "Invalid request",
-  "details": [],
-  "correlationId": "..."
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "details": [],
+    "correlationId": "..."
 }
 ```
 

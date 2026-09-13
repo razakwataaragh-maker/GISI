@@ -8,7 +8,9 @@ export interface VersionResponse {
     readonly buildIdentity: string;
 }
 
-function versionResponse(configuration: ApplicationConfiguration): VersionResponse {
+function versionResponse(
+    configuration: ApplicationConfiguration,
+): VersionResponse {
     return {
         name: configuration.app.name,
         version: configuration.app.version,
@@ -16,7 +18,9 @@ function versionResponse(configuration: ApplicationConfiguration): VersionRespon
     };
 }
 
-export function versionEndpointPlugin(configuration: ApplicationConfiguration): FastifyPluginAsync {
+export function versionEndpointPlugin(
+    configuration: ApplicationConfiguration,
+): FastifyPluginAsync {
     return fastifyPlugin(async (fastify) => {
         fastify.get('/version', async () => versionResponse(configuration));
     });

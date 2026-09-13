@@ -2,18 +2,18 @@
 
 ## Status codes
 
-| Status | Meaning |
-|---|---|
-| 200 | Successful retrieval, update, or action |
-| 201 | Resource created |
-| 204 | Successful operation without a response body |
-| 400 | Malformed or invalid request syntax |
-| 401 | Missing or invalid authentication |
-| 403 | Authenticated but not authorized |
-| 404 | Resource does not exist or is not visible to the caller |
-| 409 | State or concurrency conflict |
-| 422 | Well-formed request failing validation or a business input rule |
-| 500 | Unexpected internal failure |
+| Status | Meaning                                                         |
+| ------ | --------------------------------------------------------------- |
+| 200    | Successful retrieval, update, or action                         |
+| 201    | Resource created                                                |
+| 204    | Successful operation without a response body                    |
+| 400    | Malformed or invalid request syntax                             |
+| 401    | Missing or invalid authentication                               |
+| 403    | Authenticated but not authorized                                |
+| 404    | Resource does not exist or is not visible to the caller         |
+| 409    | State or concurrency conflict                                   |
+| 422    | Well-formed request failing validation or a business input rule |
+| 500    | Unexpected internal failure                                     |
 
 The API must not use a successful status for a failed business operation.
 
@@ -41,4 +41,3 @@ Response validation protects against:
 - Missing required values
 - Inconsistent module contracts
 - Undocumented provider data leakage
-

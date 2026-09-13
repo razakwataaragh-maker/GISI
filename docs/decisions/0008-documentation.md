@@ -23,4 +23,3 @@ Use version-controlled Markdown for project documentation, Mermaid for architect
 ## Constraints
 
 Documentation updates are part of the Definition of Done. The SRS, architecture, API, deployment, user, and administrator documentation remain version-controlled.
-

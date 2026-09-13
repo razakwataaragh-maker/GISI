@@ -24,4 +24,3 @@ Use TypeScript for backend application code and Node.js 22 LTS as the supported 
 ## Constraints
 
 Runtime-specific code must remain behind infrastructure or bootstrap boundaries so the domain remains portable.
-

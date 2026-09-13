@@ -44,7 +44,11 @@ describe('version endpoint', () => {
             version: '1.2.3',
             buildIdentity: 'gisi-test@1.2.3',
         });
-        expect(Object.keys(response.json()).sort()).toEqual(['buildIdentity', 'name', 'version']);
+        expect(Object.keys(response.json()).sort()).toEqual([
+            'buildIdentity',
+            'name',
+            'version',
+        ]);
         expect(response.headers['x-correlation-id']).toBe('version-request-1');
         await application.close();
     });

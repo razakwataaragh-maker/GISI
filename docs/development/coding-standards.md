@@ -61,4 +61,3 @@
 - Enforce integrity in PostgreSQL with constraints, foreign keys, and indexes.
 - Define transaction ownership at the application use-case boundary.
 - Preserve original records and important state transitions.
-

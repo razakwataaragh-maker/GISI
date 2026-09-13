@@ -8,17 +8,17 @@
 
 ## Required software
 
-| Software | Required version/policy | Purpose |
-|---|---|---|
-| Git | Current supported Ubuntu package, preferably 2.40+ | Source control |
-| Node.js | 22 LTS, `>=22 <23` | Backend runtime and tooling |
-| npm | Version bundled with Node.js 22, `>=10 <12` | Dependency management |
-| PostgreSQL | 16 or later | Primary local database |
-| Docker Engine | Current supported stable release | Reproducible services |
-| Docker Compose | Compose v2 plugin | Local service orchestration |
-| VS Code | Current stable release | Recommended editor |
-| curl | Current supported Ubuntu package | Health/API checks |
-| build tools | Ubuntu build-essential equivalent | Native npm modules where required |
+| Software       | Required version/policy                            | Purpose                           |
+| -------------- | -------------------------------------------------- | --------------------------------- |
+| Git            | Current supported Ubuntu package, preferably 2.40+ | Source control                    |
+| Node.js        | 22 LTS, `>=22 <23`                                 | Backend runtime and tooling       |
+| npm            | Version bundled with Node.js 22, `>=10 <12`        | Dependency management             |
+| PostgreSQL     | 16 or later                                        | Primary local database            |
+| Docker Engine  | Current supported stable release                   | Reproducible services             |
+| Docker Compose | Compose v2 plugin                                  | Local service orchestration       |
+| VS Code        | Current stable release                             | Recommended editor                |
+| curl           | Current supported Ubuntu package                   | Health/API checks                 |
+| build tools    | Ubuntu build-essential equivalent                  | Native npm modules where required |
 
 ## Optional software
 
@@ -28,4 +28,3 @@
 - A password manager for local development secrets
 
 Optional tools must not be required to run the application or tests.
-

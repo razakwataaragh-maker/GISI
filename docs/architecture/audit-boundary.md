@@ -15,14 +15,14 @@ migrations, APIs, or application services.
 Audit records and operational logs serve different purposes and must remain
 separate:
 
-| Concern | Audit records | Operational logs |
-|---|---|---|
-| Purpose | Evidence of an auditable action, its actor, target, outcome, and relevant state transition | Diagnosis, monitoring, performance analysis, and service operations |
-| Authority | Authoritative historical record for accountable actions | Non-authoritative operational telemetry |
-| Mutability | Append-only and immutable after acceptance | Managed according to logging and platform retention controls |
-| Retention | Retained according to approved compliance and institutional retention policies; records must not be silently lost | Retained according to operational, cost, and troubleshooting requirements |
-| Access | Restricted to authorized audit, compliance, security, and administrative roles | Restricted to operational personnel and systems according to least privilege |
-| Storage | Owned by the audit/compliance capability | Emitted through the `ApplicationLogger` and collected by the deployment platform |
+| Concern         | Audit records                                                                                                                         | Operational logs                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Purpose         | Evidence of an auditable action, its actor, target, outcome, and relevant state transition                                            | Diagnosis, monitoring, performance analysis, and service operations                                 |
+| Authority       | Authoritative historical record for accountable actions                                                                               | Non-authoritative operational telemetry                                                             |
+| Mutability      | Append-only and immutable after acceptance                                                                                            | Managed according to logging and platform retention controls                                        |
+| Retention       | Retained according to approved compliance and institutional retention policies; records must not be silently lost                     | Retained according to operational, cost, and troubleshooting requirements                           |
+| Access          | Restricted to authorized audit, compliance, security, and administrative roles                                                        | Restricted to operational personnel and systems according to least privilege                        |
+| Storage         | Owned by the audit/compliance capability                                                                                              | Emitted through the `ApplicationLogger` and collected by the deployment platform                    |
 | Failure meaning | An auditable action is incomplete if its required audit record cannot be durably accepted, subject to the use-case transaction policy | A missing log is an observability gap and must not be treated as proof that an action did not occur |
 
 Operational logs must never be used as the audit system of record. Audit records
@@ -234,4 +234,3 @@ Retention periods are policy-controlled and must be defined before the audit
 storage task is implemented. The implementation must support the approved
 institutional and legal retention policy without weakening append-only
 historical preservation.
-

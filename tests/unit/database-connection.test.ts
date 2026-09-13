@@ -13,7 +13,9 @@ function fakeClient() {
     return {
         $connect: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
         $disconnect: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
-        $queryRawUnsafe: vi.fn<() => Promise<unknown>>().mockResolvedValue([{ '?column?': 1 }]),
+        $queryRawUnsafe: vi
+            .fn<() => Promise<unknown>>()
+            .mockResolvedValue([{ '?column?': 1 }]),
     };
 }
 
@@ -24,7 +26,10 @@ describe('PrismaDatabaseConnection', () => {
 
         await connection.connect();
 
-        expect(await connection.checkReadiness()).toEqual({ dependency: 'postgresql', ready: true });
+        expect(await connection.checkReadiness()).toEqual({
+            dependency: 'postgresql',
+            ready: true,
+        });
         await connection.disconnect();
         expect(client.$connect).toHaveBeenCalledOnce();
         expect(client.$queryRawUnsafe).toHaveBeenCalledWith('SELECT 1');
@@ -47,12 +52,20 @@ describe('PrismaDatabaseConnection', () => {
 
     it('reports not ready before connection and after a failed readiness query', async () => {
         const client = fakeClient();
-        client.$queryRawUnsafe.mockRejectedValueOnce(new Error('database unavailable'));
+        client.$queryRawUnsafe.mockRejectedValueOnce(
+            new Error('database unavailable'),
+        );
         const connection = new PrismaDatabaseConnection(options, () => client);
 
-        expect(await connection.checkReadiness()).toEqual({ dependency: 'postgresql', ready: false });
+        expect(await connection.checkReadiness()).toEqual({
+            dependency: 'postgresql',
+            ready: false,
+        });
         await connection.connect();
-        expect(await connection.checkReadiness()).toEqual({ dependency: 'postgresql', ready: false });
+        expect(await connection.checkReadiness()).toEqual({
+            dependency: 'postgresql',
+            ready: false,
+        });
     });
 
     it('translates connection failures without exposing the URL', async () => {
@@ -71,10 +84,14 @@ describe('PrismaDatabaseConnection', () => {
 
     it('does not disconnect a client when connection establishment fails', async () => {
         const client = fakeClient();
-        client.$connect.mockRejectedValueOnce(new Error('database unavailable'));
+        client.$connect.mockRejectedValueOnce(
+            new Error('database unavailable'),
+        );
         const connection = new PrismaDatabaseConnection(options, () => client);
 
-        await expect(connection.connect()).rejects.toBeInstanceOf(DatabaseConnectionError);
+        await expect(connection.connect()).rejects.toBeInstanceOf(
+            DatabaseConnectionError,
+        );
         await connection.disconnect();
 
         expect(client.$disconnect).not.toHaveBeenCalled();

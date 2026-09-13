@@ -24,4 +24,3 @@ Use Fastify as the HTTP framework for the versioned GISI REST API.
 ## Constraints
 
 Controllers and routes must remain thin. Business logic belongs in application and domain layers.
-

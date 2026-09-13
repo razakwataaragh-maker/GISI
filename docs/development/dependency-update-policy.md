@@ -42,4 +42,3 @@ An exception must document:
 - Expiry/review date
 
 Exceptions are temporary and must not be used to bypass remediation indefinitely.
-

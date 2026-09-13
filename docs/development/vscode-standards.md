@@ -35,4 +35,3 @@ When workspace settings are added by a later task, they should configure:
 - Test discovery
 - Recommended extensions
 - Generated-file exclusions
-

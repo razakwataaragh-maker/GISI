@@ -3,10 +3,10 @@
 ## New developer onboarding
 
 1. Read the authoritative documents:
-   - [GISI-MASTER-SRS.md](../../GISI-MASTER-SRS.md)
-   - [AI-PROJECT-INSTRUCTIONS.md](../../AI-PROJECT-INSTRUCTIONS.md)
-   - [CLAUDE.md](../../CLAUDE.md)
-   - [README.md](../../README.md)
+    - [GISI-MASTER-SRS.md](../../GISI-MASTER-SRS.md)
+    - [AI-PROJECT-INSTRUCTIONS.md](../../AI-PROJECT-INSTRUCTIONS.md)
+    - [CLAUDE.md](../../CLAUDE.md)
+    - [README.md](../../README.md)
 2. Install the required Ubuntu prerequisites.
 3. Configure Git identity and repository access.
 4. Clone the repository.

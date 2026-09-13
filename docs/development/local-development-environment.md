@@ -19,4 +19,3 @@ This is documentation for the approved Foundation baseline. It does not replace 
 - Use PostgreSQL for local development; do not substitute SQLite.
 - Keep AWS services behind infrastructure interfaces.
 - Do not implement or activate future business modules out of sequence.
-

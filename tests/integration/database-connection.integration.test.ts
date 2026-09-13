@@ -11,7 +11,10 @@ describe.skipIf(!enabled)('PostgreSQL connectivity', () => {
 
         try {
             await connection.connect();
-            expect(await connection.checkReadiness()).toEqual({ dependency: 'postgresql', ready: true });
+            expect(await connection.checkReadiness()).toEqual({
+                dependency: 'postgresql',
+                ready: true,
+            });
         } finally {
             await connection.disconnect();
         }

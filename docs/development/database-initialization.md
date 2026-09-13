@@ -45,4 +45,3 @@ The database is ready when:
 - Migrations complete successfully.
 - Seeds complete successfully where applicable.
 - The readiness check reports the database dependency as available.
-

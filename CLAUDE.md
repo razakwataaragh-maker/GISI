@@ -65,9 +65,9 @@ Do not skip phases.
 - Cohort Management is Version 2.0.
 - In-portal notifications are primary.
 - Only three automatic email triggers exist in Version 1.0:
-  - Admission Granted
-  - Portal Activation
-  - Certificate Issuance
+    - Admission Granted
+    - Portal Activation
+    - Certificate Issuance
 
 ---
 

@@ -6,10 +6,10 @@ Every failed API request returns JSON with this exact top-level shape:
 
 ```json
 {
-  "code": "VALIDATION_ERROR",
-  "message": "Invalid request",
-  "details": [],
-  "correlationId": "..."
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "details": [],
+    "correlationId": "..."
 }
 ```
 
@@ -26,18 +26,18 @@ even when it handles an unexpected failure.
 
 Each code maps to exactly one standard HTTP status:
 
-| Code | HTTP status | Applies when |
-|---|---:|---|
-| `BAD_REQUEST` | 400 | Request syntax is malformed, JSON cannot be parsed, content type is unsupported, or the request cannot be interpreted as an HTTP request. |
-| `UNAUTHORIZED` | 401 | Authentication is missing, invalid, expired, or cannot establish an authenticated actor. |
-| `FORBIDDEN` | 403 | The actor is authenticated but lacks permission for the requested operation or resource. |
-| `NOT_FOUND` | 404 | The resource does not exist or must be concealed from the caller under the resource-visibility policy. |
-| `CONFLICT` | 409 | The requested operation conflicts with current state, uniqueness, concurrency, or an already-applied transition. |
-| `VALIDATION_ERROR` | 422 | A well-formed request fails transport, application, domain, or field-level input validation. |
-| `BUSINESS_RULE_VIOLATION` | 422 | A well-formed request violates a documented business invariant or use-case precondition. |
-| `DEPENDENCY_ERROR` | 500 | A required external or internal dependency fails while processing the request. |
-| `PERSISTENCE_ERROR` | 500 | A database or persistence operation fails after input and authorization have been accepted. |
-| `INTERNAL_ERROR` | 500 | An unexpected failure has no safer, more specific public classification. |
+| Code                      | HTTP status | Applies when                                                                                                                              |
+| ------------------------- | ----------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `BAD_REQUEST`             |         400 | Request syntax is malformed, JSON cannot be parsed, content type is unsupported, or the request cannot be interpreted as an HTTP request. |
+| `UNAUTHORIZED`            |         401 | Authentication is missing, invalid, expired, or cannot establish an authenticated actor.                                                  |
+| `FORBIDDEN`               |         403 | The actor is authenticated but lacks permission for the requested operation or resource.                                                  |
+| `NOT_FOUND`               |         404 | The resource does not exist or must be concealed from the caller under the resource-visibility policy.                                    |
+| `CONFLICT`                |         409 | The requested operation conflicts with current state, uniqueness, concurrency, or an already-applied transition.                          |
+| `VALIDATION_ERROR`        |         422 | A well-formed request fails transport, application, domain, or field-level input validation.                                              |
+| `BUSINESS_RULE_VIOLATION` |         422 | A well-formed request violates a documented business invariant or use-case precondition.                                                  |
+| `DEPENDENCY_ERROR`        |         500 | A required external or internal dependency fails while processing the request.                                                            |
+| `PERSISTENCE_ERROR`       |         500 | A database or persistence operation fails after input and authorization have been accepted.                                               |
+| `INTERNAL_ERROR`          |         500 | An unexpected failure has no safer, more specific public classification.                                                                  |
 
 The HTTP status mapping is exhaustive for the standard taxonomy and uses only
 the status codes approved by the SRS and API standards.
@@ -49,10 +49,10 @@ contain field-level problems such as:
 
 ```json
 [
-  {
-    "field": "email",
-    "issue": "must be a valid email address"
-  }
+    {
+        "field": "email",
+        "issue": "must be a valid email address"
+    }
 ]
 ```
 

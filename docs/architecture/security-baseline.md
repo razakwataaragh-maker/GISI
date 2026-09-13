@@ -47,11 +47,11 @@ credentials, but should still be excluded from unnecessary diagnostics.
 
 ## Transport security
 
-| Environment | Requirement |
-|---|---|
-| Local development | HTTP is permitted for loopback-only development and automated tests. Local HTTPS may be used when testing proxy, cookie, or TLS behavior. Test fixtures must never contain real credentials. |
-| Staging | HTTPS is mandatory at the externally reachable boundary. TLS terminates at the approved ingress/load balancer or application edge, with secure forwarding configuration and no plaintext external fallback. |
-| Production | HTTPS is mandatory. TLS certificates, private keys, protocol versions, cipher policy, renewal, and redirect behavior are managed by the deployment edge. Plain HTTP must redirect or be rejected according to the ingress policy and must never carry authenticated or sensitive data. |
+| Environment       | Requirement                                                                                                                                                                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local development | HTTP is permitted for loopback-only development and automated tests. Local HTTPS may be used when testing proxy, cookie, or TLS behavior. Test fixtures must never contain real credentials.                                                                                           |
+| Staging           | HTTPS is mandatory at the externally reachable boundary. TLS terminates at the approved ingress/load balancer or application edge, with secure forwarding configuration and no plaintext external fallback.                                                                            |
+| Production        | HTTPS is mandatory. TLS certificates, private keys, protocol versions, cipher policy, renewal, and redirect behavior are managed by the deployment edge. Plain HTTP must redirect or be rejected according to the ingress policy and must never carry authenticated or sensitive data. |
 
 The application must trust proxy headers only from explicitly configured trusted
 proxies. TLS termination does not permit internal components to disable
@@ -200,4 +200,3 @@ safe translation into the API error boundary. Configuration is validated at
 bootstrap. The audit/compliance capability owns required security audit
 records. Application and domain modules own business authorization rules but
 must consume the approved principal and policy contracts.
-

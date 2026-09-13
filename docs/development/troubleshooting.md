@@ -113,4 +113,3 @@ Immediate actions:
 3. Rotate or revoke the credential.
 4. Notify the security owner.
 5. Inspect Git history and CI logs.
-

@@ -889,7 +889,6 @@ GET /registrations/history
 - Registration history is preserved.
 - Registration status controls downstream processes.
 
-
 # 20. PHASE 8 — FINANCE MANAGEMENT
 
 ## Purpose
@@ -1365,7 +1364,6 @@ GET /students/{id}/transcript
 - Published results are visible to authorized students.
 - Corrections are traceable.
 - Transcript data remains accurate and auditable.
-
 
 # 25. PHASE 13 — PROGRESSION MANAGEMENT
 

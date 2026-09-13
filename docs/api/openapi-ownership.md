@@ -33,4 +33,3 @@ OpenAPI 3.1 is the authoritative machine-readable API contract. It must describe
 6. Update release notes for breaking or deprecated changes.
 
 OpenAPI documentation must be version-controlled and updated with implementation changes.
-

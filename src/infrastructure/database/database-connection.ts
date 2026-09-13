@@ -14,7 +14,10 @@ export interface DatabaseConnection {
 interface PrismaClientPort {
     $connect(): Promise<void>;
     $disconnect(): Promise<void>;
-    $queryRawUnsafe(query: string, ...values: readonly unknown[]): Promise<unknown>;
+    $queryRawUnsafe(
+        query: string,
+        ...values: readonly unknown[]
+    ): Promise<unknown>;
 }
 
 export interface DatabaseConnectionOptions {
@@ -39,9 +42,21 @@ const defaultOptions = {
 
 function databaseUrl(options: DatabaseConnectionOptions): string {
     const parsed = new URL(options.url);
-    parsed.searchParams.set('connection_limit', String(options.connectionLimit ?? defaultOptions.connectionLimit));
-    parsed.searchParams.set('pool_timeout', String(options.poolTimeoutSeconds ?? defaultOptions.poolTimeoutSeconds));
-    parsed.searchParams.set('connect_timeout', String(options.connectTimeoutSeconds ?? defaultOptions.connectTimeoutSeconds));
+    parsed.searchParams.set(
+        'connection_limit',
+        String(options.connectionLimit ?? defaultOptions.connectionLimit),
+    );
+    parsed.searchParams.set(
+        'pool_timeout',
+        String(options.poolTimeoutSeconds ?? defaultOptions.poolTimeoutSeconds),
+    );
+    parsed.searchParams.set(
+        'connect_timeout',
+        String(
+            options.connectTimeoutSeconds ??
+                defaultOptions.connectTimeoutSeconds,
+        ),
+    );
     return parsed.toString();
 }
 
@@ -49,7 +64,10 @@ export class PrismaDatabaseConnection implements DatabaseConnection {
     private readonly client: PrismaClientPort;
     private connected = false;
 
-    constructor(options: DatabaseConnectionOptions, clientFactory: (url: string) => PrismaClientPort = createPrismaClient) {
+    constructor(
+        options: DatabaseConnectionOptions,
+        clientFactory: (url: string) => PrismaClientPort = createPrismaClient,
+    ) {
         this.client = clientFactory(databaseUrl(options));
     }
 
@@ -90,6 +108,7 @@ function createPrismaClient(url: string): PrismaClientPort {
     return {
         $connect: () => client.$connect(),
         $disconnect: () => client.$disconnect(),
-        $queryRawUnsafe: (query, ...values) => client.$queryRawUnsafe(query, ...values),
+        $queryRawUnsafe: (query, ...values) =>
+            client.$queryRawUnsafe(query, ...values),
     };
 }

@@ -49,7 +49,7 @@ These operational endpoints are outside the business API prefix because they are
 
 ```json
 {
-  "status": "ok"
+    "status": "ok"
 }
 ```
 
@@ -58,11 +58,11 @@ These operational endpoints are outside the business API prefix because they are
 
 ```json
 {
-  "status": "ok",
-  "ready": true,
-  "dependencies": {
-    "postgresql": true
-  }
+    "status": "ok",
+    "ready": true,
+    "dependencies": {
+        "postgresql": true
+    }
 }
 ```
 
@@ -78,9 +78,9 @@ The response contains only controlled application metadata:
 
 ```json
 {
-  "name": "gisi",
-  "version": "0.1.0",
-  "buildIdentity": "gisi@0.1.0"
+    "name": "gisi",
+    "version": "0.1.0",
+    "buildIdentity": "gisi@0.1.0"
 }
 ```
 
@@ -122,12 +122,12 @@ Rules:
 
 ## HTTP methods
 
-| Method | Use |
-|---|---|
-| GET | Retrieve a resource or collection; must be safe and idempotent |
-| POST | Create a resource or execute a domain action |
-| PATCH | Partially update mutable resource attributes |
-| PUT | Full replacement only when replacement semantics are defined |
+| Method | Use                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------ |
+| GET    | Retrieve a resource or collection; must be safe and idempotent                                               |
+| POST   | Create a resource or execute a domain action                                                                 |
+| PATCH  | Partially update mutable resource attributes                                                                 |
+| PUT    | Full replacement only when replacement semantics are defined                                                 |
 | DELETE | Delete only where the domain explicitly permits it; prefer archival/state transitions for historical records |
 
 State transitions such as activation, suspension, publication, verification, approval, and rejection use explicit `POST` action endpoints where defined by the SRS.

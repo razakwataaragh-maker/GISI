@@ -52,4 +52,3 @@ Repeated shutdown signals may shorten the grace period, but forced termination m
 - Readiness is false until required dependencies and registrations are complete.
 - The application must not report ready after a fatal dependency initialization failure.
 - Runtime errors must not silently restart or conceal an unhealthy process.
-

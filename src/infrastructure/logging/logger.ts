@@ -1,4 +1,7 @@
-import pino, { type Logger, type LoggerOptions as PinoLoggerOptions } from 'pino';
+import pino, {
+    type Logger,
+    type LoggerOptions as PinoLoggerOptions,
+} from 'pino';
 import type { ApplicationConfiguration } from '../../bootstrap/configuration.js';
 
 export type LogLevel = ApplicationConfiguration['logging']['level'];

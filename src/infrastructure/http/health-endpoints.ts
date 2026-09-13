@@ -12,26 +12,33 @@ export interface ReadinessResponse {
     readonly dependencies: Readonly<Record<string, boolean>>;
 }
 
-export function healthEndpointsPlugin(database: DatabaseConnection): FastifyPluginAsync {
+export function healthEndpointsPlugin(
+    database: DatabaseConnection,
+): FastifyPluginAsync {
     return fastifyPlugin(async (fastify) => {
-        fastify.get('/health', async (): Promise<HealthResponse> => ({ status: 'ok' }));
+        fastify.get('/health', async (): Promise<HealthResponse> => ({
+            status: 'ok',
+        }));
 
-        fastify.get('/health/ready', async (_request, reply): Promise<ReadinessResponse> => {
-            const databaseReadiness = await database.checkReadiness();
-            const ready = databaseReadiness.ready;
-            const response: ReadinessResponse = {
-                status: ready ? 'ok' : 'not_ready',
-                ready,
-                dependencies: {
-                    [databaseReadiness.dependency]: ready,
-                },
-            };
+        fastify.get(
+            '/health/ready',
+            async (_request, reply): Promise<ReadinessResponse> => {
+                const databaseReadiness = await database.checkReadiness();
+                const ready = databaseReadiness.ready;
+                const response: ReadinessResponse = {
+                    status: ready ? 'ok' : 'not_ready',
+                    ready,
+                    dependencies: {
+                        [databaseReadiness.dependency]: ready,
+                    },
+                };
 
-            if (!ready) {
-                reply.code(503);
-            }
+                if (!ready) {
+                    reply.code(503);
+                }
 
-            return response;
-        });
+                return response;
+            },
+        );
     });
 }

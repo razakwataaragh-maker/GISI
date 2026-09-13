@@ -85,7 +85,11 @@ describe('loadConfiguration', () => {
         ['NODE_ENV', { NODE_ENV: 'invalid' }, /NODE_ENV/],
         ['AUTH_PROVIDER', { AUTH_PROVIDER: 'custom' }, /AUTH_PROVIDER/],
         ['API_PORT', { API_PORT: 'not-a-port' }, /API_PORT/],
-        ['DATABASE_URL', { DATABASE_URL: 'mysql://localhost/gisi' }, /DATABASE_URL/],
+        [
+            'DATABASE_URL',
+            { DATABASE_URL: 'mysql://localhost/gisi' },
+            /DATABASE_URL/,
+        ],
     ])('rejects invalid %s values', (_name, overrides, issue) => {
         expect(() =>
             loadConfiguration({
@@ -95,15 +99,21 @@ describe('loadConfiguration', () => {
     });
 
     it('rejects a missing required database URL', () => {
-        const { DATABASE_URL: _databaseUrl, ...environmentWithoutDatabase } = validEnvironment;
-
-        expect(() => loadConfiguration({ environment: environmentWithoutDatabase })).toThrowError(
-            /DATABASE_URL is required/,
+        const environmentWithoutDatabase = Object.fromEntries(
+            Object.entries(validEnvironment).filter(
+                ([key]) => key !== 'DATABASE_URL',
+            ),
         );
+
+        expect(() =>
+            loadConfiguration({ environment: environmentWithoutDatabase }),
+        ).toThrowError(/DATABASE_URL is required/);
     });
 
     it('keeps Cognito configuration behind the authentication infrastructure boundary', () => {
-        const configuration = loadConfiguration({ environment: validEnvironment });
+        const configuration = loadConfiguration({
+            environment: validEnvironment,
+        });
         const cognito = loadCognitoConfiguration(validCognitoEnvironment);
 
         expect(configuration.authentication).toEqual({ provider: 'cognito' });
@@ -116,7 +126,9 @@ describe('loadConfiguration', () => {
     });
 
     it('rejects missing Cognito infrastructure values without exposing values', () => {
-        expect(() => loadCognitoConfiguration({ AWS_REGION: 'eu-west-1' })).toThrowError(
+        expect(() =>
+            loadCognitoConfiguration({ AWS_REGION: 'eu-west-1' }),
+        ).toThrowError(
             /AWS_USER_POOL_ID is required for Cognito authentication/,
         );
     });

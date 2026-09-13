@@ -6,7 +6,7 @@ function captureLogs(): { stream: Writable; output: () => string } {
     let content = '';
     const stream = new Writable({
         write(chunk, _encoding, callback) {
-            content += chunk.toString();
+            content += String(chunk);
             callback();
         },
     });
@@ -24,7 +24,13 @@ describe('structured logger', () => {
             destination: captured.stream,
         });
 
-        logger.child({ module: 'configuration', action: 'load', event: 'started' }).info('Configuration loaded');
+        logger
+            .child({
+                module: 'configuration',
+                action: 'load',
+                event: 'started',
+            })
+            .info('Configuration loaded');
 
         const record = JSON.parse(captured.output()) as Record<string, unknown>;
         expect(record).toMatchObject({
@@ -85,7 +91,9 @@ describe('structured logger', () => {
         expect(captured.output()).not.toContain('access-token-value');
         expect(captured.output()).not.toContain('refresh-token-value');
         expect(captured.output()).not.toContain('client-secret-value');
-        expect(captured.output()).not.toContain('postgresql://user:password@localhost/db');
+        expect(captured.output()).not.toContain(
+            'postgresql://user:password@localhost/db',
+        );
         expect(captured.output()).not.toContain('nested-password-value');
         expect(captured.output()).not.toContain('nested-token-value');
     });

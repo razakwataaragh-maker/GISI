@@ -30,11 +30,11 @@ failures return `ready: false` and never expose provider details.
 The adapter applies safe PostgreSQL/Prisma URL parameters unless explicitly
 overridden by its typed options:
 
-| Option | Default |
-|---|---:|
-| `connectionLimit` | 10 |
-| `poolTimeoutSeconds` | 10 |
-| `connectTimeoutSeconds` | 10 |
+| Option                  | Default |
+| ----------------------- | ------: |
+| `connectionLimit`       |      10 |
+| `poolTimeoutSeconds`    |      10 |
+| `connectTimeoutSeconds` |      10 |
 
 The connection URL is supplied by the validated `ApplicationConfiguration`
 database boundary. The URL is a secret whenever it contains credentials and is

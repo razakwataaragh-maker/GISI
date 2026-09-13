@@ -5,15 +5,15 @@
 GISI uses Vitest with deterministic local execution. Each test category has a
 separate directory and npm script:
 
-| Category | Directory | Command |
-|---|---|---|
-| Unit | `tests/unit` | `npm run test:unit` |
-| Integration | `tests/integration` | `npm run test:integration` |
-| API | `tests/api` | `npm run test:api` |
-| Architecture | `tests/architecture` | `npm run test:architecture` |
-| Security | `tests/security` | `npm run test:security` |
-| Performance | `tests/performance` | `npm run test:performance` |
-| End-to-end | `tests/end-to-end` | `npm run test:end-to-end` |
+| Category       | Directory            | Command                          |
+| -------------- | -------------------- | -------------------------------- |
+| Unit           | `tests/unit`         | `npm run test:unit`              |
+| Integration    | `tests/integration`  | `npm run test:integration`       |
+| API            | `tests/api`          | `npm run test:api`               |
+| Architecture   | `tests/architecture` | `npm run test:architecture`      |
+| Security       | `tests/security`     | `npm run test:security`          |
+| Performance    | `tests/performance`  | `npm run test:performance`       |
+| End-to-end     | `tests/end-to-end`   | `npm run test:end-to-end`        |
 | All categories | `tests/**/*.test.ts` | `npm test` or `npm run test:all` |
 
 Empty category directories are valid while their implementation tasks are

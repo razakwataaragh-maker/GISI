@@ -2,19 +2,19 @@
 
 ## Authoritative variables
 
-| Variable | Required | Default | Sensitive | Purpose |
-|---|---:|---|---:|---|
-| `APP_NAME` | No | `gisi` | No | Application name |
-| `APP_VERSION` | No | `0.1.0` | No | Application/build version |
-| `NODE_ENV` | No | `development` | No | Environment: development, test, staging, or production |
-| `API_HOST` | No | `127.0.0.1` | No | HTTP listener host |
-| `API_PORT` | No | `3000` | No | HTTP listener port, 1-65535 |
-| `LOG_LEVEL` | No | `info` | No | Structured logging level |
-| `AUTH_PROVIDER` | No | `cognito` | No | Authentication provider |
-| `DATABASE_URL` | Yes | None | Yes | PostgreSQL connection URL |
-| `AWS_REGION` | Yes | None | No | AWS provider region |
-| `AWS_USER_POOL_ID` | No* | None | No | Cognito user-pool identifier |
-| `AWS_CLIENT_ID` | No* | None | No | Cognito client identifier |
+| Variable           | Required | Default       | Sensitive | Purpose                                                |
+| ------------------ | -------: | ------------- | --------: | ------------------------------------------------------ |
+| `APP_NAME`         |       No | `gisi`        |        No | Application name                                       |
+| `APP_VERSION`      |       No | `0.1.0`       |        No | Application/build version                              |
+| `NODE_ENV`         |       No | `development` |        No | Environment: development, test, staging, or production |
+| `API_HOST`         |       No | `127.0.0.1`   |        No | HTTP listener host                                     |
+| `API_PORT`         |       No | `3000`        |        No | HTTP listener port, 1-65535                            |
+| `LOG_LEVEL`        |       No | `info`        |        No | Structured logging level                               |
+| `AUTH_PROVIDER`    |       No | `cognito`     |        No | Authentication provider                                |
+| `DATABASE_URL`     |      Yes | None          |       Yes | PostgreSQL connection URL                              |
+| `AWS_REGION`       |      Yes | None          |        No | AWS provider region                                    |
+| `AWS_USER_POOL_ID` |      No* | None          |        No | Cognito user-pool identifier                           |
+| `AWS_CLIENT_ID`    |      No* | None          |        No | Cognito client identifier                              |
 
 Required values are validated before infrastructure clients or modules are created. Sensitive values are retained only in the immutable in-memory configuration object and are never included in configuration summaries or validation errors.
 

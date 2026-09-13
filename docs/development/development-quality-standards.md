@@ -63,4 +63,3 @@ The eventual package manifest will expose these checks through `npm run` scripts
 - Keep AWS and provider SDK types inside infrastructure adapters.
 - Add tests for new behavior and changed behavior.
 - Comments should explain non-obvious decisions, not restate code.
-

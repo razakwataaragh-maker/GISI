@@ -54,4 +54,3 @@ Security review is required for:
 
 - Authentication, authorization, secrets, PII, payments, audit, or access-control changes.
 - Vulnerability exceptions.
-

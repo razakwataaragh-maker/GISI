@@ -67,4 +67,3 @@ Cross-module calls must not create hidden circular dependencies.
 ## Version 1.0 exclusions
 
 No Foundation or Version 1.0 implementation may introduce the excluded Version 2.0 modules, including Cohort Management, Facilitator Management, Attendance Management, Class Scheduling, Mobile Applications, Online Assessment, or Payment Gateway Integration.
-

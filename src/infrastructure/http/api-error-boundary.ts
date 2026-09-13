@@ -64,7 +64,10 @@ export interface ApiErrorResponse {
 }
 
 function isApiErrorCode(value: unknown): value is ApiErrorCode {
-    return typeof value === 'string' && (apiErrorCodes as readonly string[]).includes(value);
+    return (
+        typeof value === 'string' &&
+        (apiErrorCodes as readonly string[]).includes(value)
+    );
 }
 
 function safeDetails(value: unknown): ApiErrorDetail[] {
@@ -78,9 +81,13 @@ function safeDetails(value: unknown): ApiErrorDetail[] {
         }
 
         const candidate = detail as Record<string, unknown>;
-        const field = typeof candidate.field === 'string' ? candidate.field : undefined;
-        const issue = typeof candidate.issue === 'string' ? candidate.issue : undefined;
-        return field !== undefined && issue !== undefined ? [{ field, issue }] : [];
+        const field =
+            typeof candidate.field === 'string' ? candidate.field : undefined;
+        const issue =
+            typeof candidate.issue === 'string' ? candidate.issue : undefined;
+        return field !== undefined && issue !== undefined
+            ? [{ field, issue }]
+            : [];
     });
 }
 
@@ -91,13 +98,17 @@ function validationDetails(error: FastifyError): ApiErrorDetail[] {
 
     return error.validation.flatMap((entry) => {
         const field =
-            typeof entry.instancePath === 'string' && entry.instancePath.length > 0
+            typeof entry.instancePath === 'string' &&
+            entry.instancePath.length > 0
                 ? entry.instancePath
                 : typeof entry.params?.missingProperty === 'string'
                   ? entry.params.missingProperty
                   : undefined;
-        const issue = typeof entry.message === 'string' ? entry.message : undefined;
-        return field !== undefined && issue !== undefined ? [{ field, issue }] : [];
+        const issue =
+            typeof entry.message === 'string' ? entry.message : undefined;
+        return field !== undefined && issue !== undefined
+            ? [{ field, issue }]
+            : [];
     });
 }
 
@@ -116,7 +127,9 @@ function classifyError(error: unknown): {
     if (isApiErrorCode(error.code)) {
         return {
             code: error.code,
-            details: safeDetails(error instanceof ApiError ? error.details : []),
+            details: safeDetails(
+                error instanceof ApiError ? error.details : [],
+            ),
         };
     }
 
@@ -142,12 +155,15 @@ function classifyError(error: unknown): {
     }
 }
 
-export function apiErrorBoundaryPlugin(logger: ApplicationLogger): FastifyPluginAsync {
+export function apiErrorBoundaryPlugin(
+    logger: ApplicationLogger,
+): FastifyPluginAsync {
     return fastifyPlugin(async (fastify) => {
         fastify.setErrorHandler((error, request, reply) => {
             const classified = classifyError(error);
             const correlationId = request.correlationId;
-            const requestLogger = request.applicationLogger ?? logger.child({ correlationId });
+            const requestLogger =
+                request.applicationLogger ?? logger.child({ correlationId });
 
             requestLogger.error(
                 {

@@ -41,4 +41,3 @@ Foundation work should remain scoped to its approved task.
 - Do not commit secrets, `.env` files, `node_modules`, build output, or generated coverage.
 - Pull with fast-forward-only behavior unless an explicit integration workflow says otherwise.
 - Never rewrite shared branch history without authorization.
-

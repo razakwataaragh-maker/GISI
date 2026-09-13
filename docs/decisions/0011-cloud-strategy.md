@@ -23,4 +23,3 @@ Use AWS as the initial cloud platform with API Gateway, Lambda, RDS PostgreSQL, 
 ## Constraints
 
 AWS-specific implementations belong in infrastructure adapters. Domain and application layers must depend on interfaces, not AWS SDK types. The initial deployment choice must not change GISI business rules.
-

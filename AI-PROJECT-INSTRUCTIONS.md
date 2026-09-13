@@ -1,4 +1,5 @@
 # AI PROJECT INSTRUCTIONS
+
 # GISI Student Management & Academic Administration Platform
 
 Version: 1.0
@@ -595,10 +596,10 @@ Correlation ID
 Example:
 
 {
-  "code": "VALIDATION_ERROR",
-  "message": "Invalid request",
-  "details": [],
-  "correlationId": "..."
+"code": "VALIDATION_ERROR",
+"message": "Invalid request",
+"details": [],
+"correlationId": "..."
 }
 
 ---

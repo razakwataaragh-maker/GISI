@@ -39,7 +39,8 @@ describe('correlation identifiers', () => {
             }
             return {
                 correlationId: request.correlationId,
-                hasScopedLogger: typeof request.applicationLogger.info === 'function',
+                hasScopedLogger:
+                    typeof request.applicationLogger.info === 'function',
             };
         });
 
@@ -50,7 +51,9 @@ describe('correlation identifiers', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.headers[correlationIdHeader.toLowerCase()]).toBe('upstream-123');
+        expect(response.headers[correlationIdHeader.toLowerCase()]).toBe(
+            'upstream-123',
+        );
         expect(response.json()).toEqual({
             correlationId: 'upstream-123',
             hasScopedLogger: true,
@@ -67,7 +70,9 @@ describe('correlation identifiers', () => {
             environment: 'test',
         });
         await application.register(correlationIdPlugin(logger));
-        application.get('/test', async (request) => ({ correlationId: request.correlationId }));
+        application.get('/test', async (request) => ({
+            correlationId: request.correlationId,
+        }));
 
         const response = await application.inject({
             method: 'GET',
@@ -75,7 +80,8 @@ describe('correlation identifiers', () => {
             headers: { [correlationIdHeader]: 'invalid correlation id' },
         });
 
-        const correlationId = response.headers[correlationIdHeader.toLowerCase()];
+        const correlationId =
+            response.headers[correlationIdHeader.toLowerCase()];
         expect(correlationId).toMatch(
             /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
         );

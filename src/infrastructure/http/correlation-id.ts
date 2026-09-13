@@ -13,7 +13,9 @@ declare module 'fastify' {
     }
 }
 
-export function isValidCorrelationId(value: string | undefined): value is string {
+export function isValidCorrelationId(
+    value: string | undefined,
+): value is string {
     return value !== undefined && correlationIdPattern.test(value);
 }
 
@@ -21,14 +23,17 @@ export function resolveCorrelationId(value: string | undefined): string {
     return isValidCorrelationId(value) ? value : randomUUID();
 }
 
-export function correlationIdPlugin(logger: ApplicationLogger): FastifyPluginAsync {
+export function correlationIdPlugin(
+    logger: ApplicationLogger,
+): FastifyPluginAsync {
     return fastifyPlugin(async (fastify) => {
         fastify.decorateRequest('correlationId', '');
         fastify.decorateRequest('applicationLogger', null);
 
         fastify.addHook('onRequest', async (request, reply) => {
             const header = request.headers[correlationIdHeader.toLowerCase()];
-            const suppliedCorrelationId = typeof header === 'string' ? header : undefined;
+            const suppliedCorrelationId =
+                typeof header === 'string' ? header : undefined;
             const correlationId = resolveCorrelationId(suppliedCorrelationId);
             request.correlationId = correlationId;
             request.applicationLogger = logger.child({ correlationId });

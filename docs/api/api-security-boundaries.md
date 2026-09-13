@@ -37,4 +37,3 @@ Examples:
 - No secrets in URLs, logs, errors, or responses
 - Audit logging for privileged and sensitive actions
 - Consistent correlation IDs for investigations
-

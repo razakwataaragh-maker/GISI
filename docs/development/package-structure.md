@@ -8,36 +8,36 @@ The repository will contain one root `package.json` with these sections:
 
 ```json
 {
-  "name": "gisi",
-  "version": "0.1.0",
-  "private": true,
-  "engines": {
-    "node": ">=22 <23",
-    "npm": ">=10 <12"
-  },
-  "scripts": {
-    "dev": "...",
-    "build": "...",
-    "start": "...",
-    "typecheck": "...",
-    "lint": "...",
-    "format": "...",
-    "format:check": "...",
-    "test": "...",
-    "test:unit": "...",
-    "test:integration": "...",
-    "test:api": "...",
-    "test:architecture": "...",
-    "test:security": "...",
-    "test:performance": "...",
-    "test:coverage": "...",
-    "db:migrate": "...",
-    "db:migrate:validate": "...",
-    "db:seed": "...",
-    "docs:validate": "..."
-  },
-  "dependencies": {},
-  "devDependencies": {}
+    "name": "gisi",
+    "version": "0.1.0",
+    "private": true,
+    "engines": {
+        "node": ">=22 <23",
+        "npm": ">=10 <12"
+    },
+    "scripts": {
+        "dev": "...",
+        "build": "...",
+        "start": "...",
+        "typecheck": "...",
+        "lint": "...",
+        "format": "...",
+        "format:check": "...",
+        "test": "...",
+        "test:unit": "...",
+        "test:integration": "...",
+        "test:api": "...",
+        "test:architecture": "...",
+        "test:security": "...",
+        "test:performance": "...",
+        "test:coverage": "...",
+        "db:migrate": "...",
+        "db:migrate:validate": "...",
+        "db:seed": "...",
+        "docs:validate": "..."
+    },
+    "dependencies": {},
+    "devDependencies": {}
 }
 ```
 
@@ -62,4 +62,3 @@ The foundation will add, when appropriate:
 The root manifest owns shared tooling and runtime dependencies. It must not be split into per-module package manifests during Version 1.0 unless a future ADR explicitly approves a workspace architecture.
 
 Business modules remain directories inside the modular monolith, not independently published npm packages.
-

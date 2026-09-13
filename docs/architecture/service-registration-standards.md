@@ -23,16 +23,16 @@ Services must not rely on undocumented scope behavior.
 
 ## Ownership examples
 
-| Service | Owner | Scope |
-|---|---|---|
-| Configuration | Bootstrap | Singleton |
-| Logger factory | Infrastructure/bootstrap | Singleton |
-| Database client | Infrastructure | Singleton |
-| Repository | Module infrastructure | Application-scoped |
-| Use-case service | Module application | Application-scoped |
-| Authenticated principal | API/request context | Request |
-| Unit of work | Database/application | Factory/request |
-| Clock | Shared/bootstrap | Singleton |
+| Service                 | Owner                    | Scope              |
+| ----------------------- | ------------------------ | ------------------ |
+| Configuration           | Bootstrap                | Singleton          |
+| Logger factory          | Infrastructure/bootstrap | Singleton          |
+| Database client         | Infrastructure           | Singleton          |
+| Repository              | Module infrastructure    | Application-scoped |
+| Use-case service        | Module application       | Application-scoped |
+| Authenticated principal | API/request context      | Request            |
+| Unit of work            | Database/application     | Factory/request    |
+| Clock                   | Shared/bootstrap         | Singleton          |
 
 ## Prohibited registration
 
@@ -41,4 +41,3 @@ Services must not rely on undocumented scope behavior.
 - Concrete provider clients in domain constructors
 - Duplicate database or logger clients without an approved reason
 - Registration based on unreviewed filesystem scanning
-

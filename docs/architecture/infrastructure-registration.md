@@ -31,4 +31,3 @@ AWS implementations may use Cognito, RDS, S3, SES, CloudWatch, and EventBridge, 
 - Optional infrastructure must have an explicit degraded-mode policy.
 - External failures must produce typed internal errors and structured diagnostics.
 - No provider failure may be silently converted to a successful business operation.
-

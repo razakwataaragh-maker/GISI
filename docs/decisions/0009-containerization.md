@@ -23,4 +23,3 @@ Use Docker for reproducible service images and Docker Compose for local developm
 ## Constraints
 
 Containers must not be treated as a reason to couple business logic to a deployment platform. Production deployment packaging will be decided by the AWS delivery design.
-

@@ -62,4 +62,3 @@ Request scope must not leak across concurrent requests.
 - Interfaces belong at the layer that consumes them.
 - Infrastructure implements interfaces; it does not redefine business contracts.
 - Tests may inject fakes or controlled adapters through the same contracts.
-

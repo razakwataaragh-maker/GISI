@@ -23,4 +23,3 @@ Use Vitest as the primary test runner, Fastify request injection for API tests, 
 ## Constraints
 
 Coverage targets remain 90% domain, 80% application, and 70% API. Tests must be deterministic and must not use production data.
-

@@ -46,12 +46,17 @@ describe('health endpoints', () => {
     it('returns ready when the database reports readiness', async () => {
         const database: DatabaseConnection = {
             connect: vi.fn(),
-            checkReadiness: vi.fn().mockResolvedValue({ dependency: 'postgresql', ready: true }),
+            checkReadiness: vi
+                .fn()
+                .mockResolvedValue({ dependency: 'postgresql', ready: true }),
             disconnect: vi.fn(),
         };
         const application = await createApplication(database);
 
-        const response = await application.inject({ method: 'GET', url: '/health/ready' });
+        const response = await application.inject({
+            method: 'GET',
+            url: '/health/ready',
+        });
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({
@@ -66,12 +71,17 @@ describe('health endpoints', () => {
     it('returns service unavailable when the database is not ready', async () => {
         const database: DatabaseConnection = {
             connect: vi.fn(),
-            checkReadiness: vi.fn().mockResolvedValue({ dependency: 'postgresql', ready: false }),
+            checkReadiness: vi
+                .fn()
+                .mockResolvedValue({ dependency: 'postgresql', ready: false }),
             disconnect: vi.fn(),
         };
         const application = await createApplication(database);
 
-        const response = await application.inject({ method: 'GET', url: '/health/ready' });
+        const response = await application.inject({
+            method: 'GET',
+            url: '/health/ready',
+        });
 
         expect(response.statusCode).toBe(503);
         expect(response.json()).toEqual({

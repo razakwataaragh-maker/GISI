@@ -30,4 +30,3 @@ GISI will standardize on:
 ## Consequences
 
 The repository gains consistent, automatable quality rules. Actual tool configuration files and dependencies remain separate implementation work and must conform to these standards.
-

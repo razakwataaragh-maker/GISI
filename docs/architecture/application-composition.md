@@ -47,4 +47,3 @@ Validated Configuration
 - `src/infrastructure/` owns provider and persistence implementations.
 - `src/modules/` owns module contexts, use cases, domain behavior, and module API registration.
 - The runtime entry point owns process signals and exit status.
-

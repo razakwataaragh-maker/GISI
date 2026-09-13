@@ -28,4 +28,3 @@ Use npm with one private root manifest and one committed `package-lock.json`.
 ## Consequences
 
 The project gains simple, reproducible dependency management and clear ownership. A future move to workspaces or independently published packages requires a new ADR and migration plan.
-

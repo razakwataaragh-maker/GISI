@@ -70,4 +70,3 @@ docker compose version
 ## VS Code
 
 Install the current stable VS Code release from the approved distribution channel. The editor must use the repository's TypeScript language service and local quality commands.
-

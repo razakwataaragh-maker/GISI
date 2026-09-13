@@ -9,11 +9,14 @@ import {
 import { correlationIdPlugin } from '../../src/infrastructure/http/correlation-id.js';
 import { createLogger } from '../../src/infrastructure/logging/logger.js';
 
-function testLogger(): { logger: ReturnType<typeof createLogger>; output: () => string } {
+function testLogger(): {
+    logger: ReturnType<typeof createLogger>;
+    output: () => string;
+} {
     let content = '';
     const destination = new Writable({
         write(chunk, _encoding, callback) {
-            content += chunk.toString();
+            content += String(chunk);
             callback();
         },
     });
@@ -37,7 +40,9 @@ describe('API error boundary', () => {
         await application.register(correlationIdPlugin(test.logger));
         await application.register(apiErrorBoundaryPlugin(test.logger));
         application.get('/validation', async () => {
-            throw new ApiError('VALIDATION_ERROR', [{ field: 'email', issue: 'must be valid' }]);
+            throw new ApiError('VALIDATION_ERROR', [
+                { field: 'email', issue: 'must be valid' },
+            ]);
         });
 
         const response = await application.inject({
@@ -53,7 +58,9 @@ describe('API error boundary', () => {
             details: [{ field: 'email', issue: 'must be valid' }],
             correlationId: 'validation-request-1',
         });
-        expect(response.headers['x-correlation-id']).toBe('validation-request-1');
+        expect(response.headers['x-correlation-id']).toBe(
+            'validation-request-1',
+        );
         await application.close();
     });
 
@@ -62,9 +69,12 @@ describe('API error boundary', () => {
         const test = testLogger();
         await application.register(correlationIdPlugin(test.logger));
         await application.register(apiErrorBoundaryPlugin(test.logger));
-        application.get<{ Params: { code: string } }>('/errors/:code', async (request) => {
-            throw new ApiError(request.params.code as ApiErrorCode);
-        });
+        application.get<{ Params: { code: string } }>(
+            '/errors/:code',
+            async (request) => {
+                throw new ApiError(request.params.code as ApiErrorCode);
+            },
+        );
 
         const cases = [
             ['BAD_REQUEST', 400],
@@ -80,7 +90,10 @@ describe('API error boundary', () => {
         ] as const;
 
         for (const [code, statusCode] of cases) {
-            const response = await application.inject({ method: 'GET', url: `/errors/${code}` });
+            const response = await application.inject({
+                method: 'GET',
+                url: `/errors/${code}`,
+            });
             expect(response.statusCode).toBe(statusCode);
             expect(response.json()).toMatchObject({ code, details: [] });
         }

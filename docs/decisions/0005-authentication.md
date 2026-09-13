@@ -23,4 +23,3 @@ Use AWS Cognito as the initial identity provider, accessed only through a GISI a
 ## Constraints
 
 Authorization and role enforcement remain server-side. Cognito authentication does not replace GISI authorization, audit logging, or business permission checks.
-

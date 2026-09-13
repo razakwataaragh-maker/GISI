@@ -30,4 +30,3 @@ GISI will use:
 ## Consequences
 
 Composition is explicit and reviewable, with predictable lifecycle behavior and straightforward test substitution. The composition root may contain wiring complexity, which is accepted as the correct location for that complexity.
-

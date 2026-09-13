@@ -43,4 +43,3 @@ The Foundation API shell may register only foundation endpoints. Future business
 ## Module contract
 
 A module registration contract must not expose private repositories, database models, or provider clients. It exposes only approved application contracts and API registration behavior.
-

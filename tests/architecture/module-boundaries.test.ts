@@ -42,7 +42,9 @@ describe('module boundaries', () => {
                     ) &&
                     !relative(sourceRoot, file).startsWith('infrastructure/')
                 ) {
-                    violations.push(`${relative(repositoryRoot, file)} imports ${importedPackage}`);
+                    violations.push(
+                        `${relative(repositoryRoot, file)} imports ${importedPackage}`,
+                    );
                 }
             }
         }
@@ -59,7 +61,11 @@ describe('module boundaries', () => {
                 const files = await sourceFiles(layerPath);
                 for (const file of files) {
                     const content = await readFile(file, 'utf8');
-                    if (/(?:from\s+|import\s*\()\s*['"][^'"]*infrastructure\//.test(content)) {
+                    if (
+                        /(?:from\s+|import\s*\()\s*['"][^'"]*infrastructure\//.test(
+                            content,
+                        )
+                    ) {
                         violations.push(relative(repositoryRoot, file));
                     }
                 }

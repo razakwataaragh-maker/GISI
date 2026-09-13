@@ -24,4 +24,3 @@ Use Pino for structured application logging.
 ## Constraints
 
 Operational logs are not a substitute for immutable audit records. Passwords, tokens, secrets, payment credentials, and unnecessary personal data must never be logged.
-

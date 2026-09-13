@@ -52,12 +52,19 @@ const defaults = {
     AUTH_PROVIDER: 'cognito',
 } as const;
 
-function value(environment: EnvironmentVariables, key: string): string | undefined {
+function value(
+    environment: EnvironmentVariables,
+    key: string,
+): string | undefined {
     const candidate = environment[key]?.trim();
     return candidate === '' ? undefined : candidate;
 }
 
-function required(environment: EnvironmentVariables, key: string, issues: string[]): string | undefined {
+function required(
+    environment: EnvironmentVariables,
+    key: string,
+    issues: string[],
+): string | undefined {
     const candidate = value(environment, key);
     if (!candidate) {
         issues.push(`${key} is required`);
@@ -85,7 +92,10 @@ function oneOf<T extends string>(
     return candidate as T;
 }
 
-function port(environment: EnvironmentVariables, issues: string[]): number | undefined {
+function port(
+    environment: EnvironmentVariables,
+    issues: string[],
+): number | undefined {
     const raw = required(environment, 'API_PORT', issues);
     if (!raw) {
         return undefined;
@@ -105,7 +115,10 @@ function port(environment: EnvironmentVariables, issues: string[]): number | und
     return parsed;
 }
 
-function databaseUrl(environment: EnvironmentVariables, issues: string[]): string | undefined {
+function databaseUrl(
+    environment: EnvironmentVariables,
+    issues: string[],
+): string | undefined {
     const candidate = required(environment, 'DATABASE_URL', issues);
     if (!candidate) {
         return undefined;
@@ -113,7 +126,10 @@ function databaseUrl(environment: EnvironmentVariables, issues: string[]): strin
 
     try {
         const parsed = new URL(candidate);
-        if (parsed.protocol !== 'postgresql:' && parsed.protocol !== 'postgres:') {
+        if (
+            parsed.protocol !== 'postgresql:' &&
+            parsed.protocol !== 'postgres:'
+        ) {
             throw new Error('unsupported protocol');
         }
     } catch {
@@ -127,11 +143,13 @@ function databaseUrl(environment: EnvironmentVariables, issues: string[]): strin
 function freeze<T>(valueToFreeze: T): Readonly<T> {
     if (valueToFreeze !== null && typeof valueToFreeze === 'object') {
         Object.freeze(valueToFreeze);
-        for (const nestedValue of Object.values(valueToFreeze as Record<string, unknown>)) {
+        for (const nestedValue of Object.values(
+            valueToFreeze as Record<string, unknown>,
+        )) {
             freeze(nestedValue);
         }
     }
-    return valueToFreeze as Readonly<T>;
+    return valueToFreeze;
 }
 
 function withDefaults(environment: EnvironmentVariables): EnvironmentVariables {
@@ -141,10 +159,17 @@ function withDefaults(environment: EnvironmentVariables): EnvironmentVariables {
     };
 }
 
-export function loadConfiguration(options: ConfigurationLoadOptions = {}): ApplicationConfiguration {
+export function loadConfiguration(
+    options: ConfigurationLoadOptions = {},
+): ApplicationConfiguration {
     const environment = withDefaults(options.environment ?? process.env);
     const issues: string[] = [];
-    const applicationEnvironment = oneOf(environment, 'NODE_ENV', environments, issues);
+    const applicationEnvironment = oneOf(
+        environment,
+        'NODE_ENV',
+        environments,
+        issues,
+    );
     const level = oneOf(environment, 'LOG_LEVEL', logLevels, issues);
     const provider = oneOf(environment, 'AUTH_PROVIDER', authProviders, issues);
     const url = databaseUrl(environment, issues);
@@ -179,7 +204,9 @@ export function loadConfiguration(options: ConfigurationLoadOptions = {}): Appli
     });
 }
 
-export function safeConfigurationSummary(configuration: ApplicationConfiguration): Record<string, unknown> {
+export function safeConfigurationSummary(
+    configuration: ApplicationConfiguration,
+): Record<string, unknown> {
     return {
         app: configuration.app,
         api: configuration.api,
