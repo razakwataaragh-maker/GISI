@@ -8,8 +8,16 @@
     "npm": ">=10 <12"
   },
   "scripts": {
+    "test": "npm run test:all",
+    "test:all": "vitest run",
     "test:unit": "vitest run tests/unit",
-    "test": "npm run test:unit",
+    "test:integration": "vitest run tests/integration",
+    "test:api": "vitest run tests/api",
+    "test:architecture": "vitest run tests/architecture",
+    "test:security": "vitest run tests/security",
+    "test:performance": "vitest run tests/performance",
+    "test:end-to-end": "vitest run tests/end-to-end",
+    "test:coverage": "vitest run --coverage",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "db:migrate:deploy": "prisma migrate deploy",
@@ -17,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.5.1",
+    "@vitest/coverage-v8": "^5.0.0",
     "prisma": "^6.12.0",
     "typescript": "^5.7.3",
     "vite": "^8.3.0",
