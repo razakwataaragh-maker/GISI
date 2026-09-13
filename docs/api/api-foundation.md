@@ -43,6 +43,33 @@ GET /version
 
 These operational endpoints are outside the business API prefix because they are consumed by infrastructure and deployment tooling. If a versioned operational API is later required, it must be introduced as a documented compatibility decision.
 
+### Health responses
+
+`GET /health` is a public liveness endpoint that does not query PostgreSQL:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+`GET /health/ready` is a public readiness endpoint. It uses the existing
+`DatabaseConnection.checkReadiness()` contract and returns:
+
+```json
+{
+  "status": "ok",
+  "ready": true,
+  "dependencies": {
+    "postgresql": true
+  }
+}
+```
+
+When PostgreSQL is not ready, the endpoint returns HTTP `503` and the same safe
+shape with `"status": "not_ready"` and `false` dependency values. Provider
+errors, connection strings, and internal topology are never returned.
+
 ### Version response
 
 `GET /version` is public and does not require user authentication. It remains

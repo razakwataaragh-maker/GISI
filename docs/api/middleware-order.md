@@ -34,3 +34,9 @@ The default request pipeline is:
 - Be safe for load balancers and deployment checks.
 - Have explicit rate-limit and exposure policies.
 
+`GET /health` is a dependency-free liveness check and returns HTTP 200 with
+`{"status":"ok"}` when the process is serving requests. `GET /health/ready`
+delegates to the injected `DatabaseConnection.checkReadiness()` contract and
+returns HTTP 200 only when PostgreSQL is ready. It returns HTTP 503 with a safe
+dependency status when readiness fails. Neither endpoint requires
+authentication, and neither response includes provider error details.
