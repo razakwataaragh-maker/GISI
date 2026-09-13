@@ -1,99 +1,62 @@
 # GISI Project Status
 
 **Snapshot date:** 2026-09-13  
-**Current phase:** `001-project-foundation` — Version 1.0, Phase 0  
+**Current phase:** Phase 1, Identity & Access Management — in progress
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
 authoritative backlog and this file must not be treated as a replacement for
 it.
 
-## Completed tasks
+## Phase 0 status
 
-The following tasks are currently marked `done` in the `todos` table:
+Project Foundation (Phase 0) is fully complete and approved.
 
-1. `establish-repository-layout` — Established the approved repository
-   structure for source, modules, infrastructure, database, deployment,
-   scripts, tests, and documentation.
-2. `select-and-record-technology-baseline` — Recorded the approved runtime,
-   language, API framework, database tooling, test runner, package manager, and
-   infrastructure-as-code baseline.
-3. `configure-dependency-management` — Established dependency manifests,
-   lockfile policy, runtime policy, and reproducible installation commands.
-4. `configure-development-quality-tools` — Implemented and installed ESLint,
-   Prettier, `.editorconfig`, and the `lint`, `format`, `format:check`, and
-   `typecheck` npm scripts; all quality checks pass as of commit
-   `93410e3ba8fe65e1f318cc710ffe16c443f8c259`.
-5. `document-local-development-environment` — Documented prerequisites,
-   setup, local services, database bootstrap, commands, and troubleshooting.
-6. `define-application-composition` — Defined the composition root, dependency
-   registration, lifecycle ownership, and graceful startup/shutdown design.
-7. `define-api-foundation` — Defined versioned REST API conventions, JSON
-   rules, OpenAPI ownership, middleware ordering, and routing boundaries.
-8. `implement-configuration-management` — Implemented typed configuration
-   categories, validation, safe defaults, precedence, and environment
-   boundaries without committing secrets.
-9. `establish-postgresql-connectivity` — Established PostgreSQL connection
-   lifecycle, pooling, readiness, transaction boundaries, and environment
-   access.
-10. `establish-database-migrations` — Defined migration ownership, naming,
-    execution, rollback, validation, local bootstrap, seeds, and CI checks.
-11. `define-data-integrity-conventions` — Defined database constraints,
-    foreign keys, indexes, historical preservation, audit storage, and table
-    ownership conventions.
-12. `implement-structured-logging` — Implemented structured logging with
-    severity, context, environment/version fields, and sensitive-data
-    redaction.
-13. `implement-correlation-identifiers` — Implemented correlation ID
-    propagation through requests, logs, response headers, and error responses.
-14. `define-error-taxonomy` — Defined stable categories and codes for
-    validation, access, resource, business, dependency, persistence, and
-    unexpected errors.
-15. `implement-api-error-boundary` — Implemented centralized error
-    translation, status mapping, safe responses, validation details,
-    correlation IDs, and diagnostic logging.
-16. `implement-health-endpoints` — Implemented dependency-free liveness and
-    PostgreSQL-backed readiness endpoints with safe responses.
-17. `implement-version-endpoint` — Implemented the public version endpoint
-    using controlled application metadata.
-18. `establish-test-harness` — Established independent deterministic test
-    suites and V8 coverage reporting with forward-looking layer thresholds.
-19. `add-foundation-tests` — Added foundation coverage for configuration,
-    database lifecycle, health/readiness, version, logging redaction, error
-    contracts, and architecture boundaries.
-20. `establish-security-baseline` — Defined secrets handling, TLS, secure
-    headers, CORS, rate limiting, dependency scanning, validation, and
-    authentication/authorization boundaries.
-21. `define-audit-boundary` — Defined immutable audit records, event
-    categories, ownership, retention, safe fields, and separation from
-    operational logs.
-22. `configure-continuous-integration` — Implemented GitHub Actions CI on
-    every pull request and push to `master`, covering installation, formatting,
-    linting, type checking, Prisma validation/generation, ephemeral PostgreSQL
-    migrations, the full test suite with coverage, dependency audit, secret
-    scanning, and coverage artifacts; merged to `master` as `bda699f`.
+## Phase 1 completed tasks
+
+The following Phase 1 tasks have been completed, in order:
+
+1. `define-iam-architecture`
+2. `define-authentication-architecture`
+3. `define-authorization-architecture`
+4. `define-iam-data-model`
+5. `establish-iam-persistence`
+6. `implement-audit-writer`
+
+`implement-audit-writer` was implemented and committed, but has **not** received
+final independent review/sign-off from the reviewing AI. The reviewer was
+reading the raw contents of
+`src/modules/audit/domain/audit-writer.ts`,
+`src/modules/audit/application/validate-audit-event.ts`,
+`src/modules/audit/infrastructure/prisma-audit-writer.ts`,
+`tests/unit/audit-writer.test.ts`, and
+`prisma/migrations/20260913190522_preserve_iam_history_and_audit/migration.sql`
+when the session ended. The next reviewing AI must read these files directly and
+complete that review before treating this task as fully verified, even though it
+is marked `done` in the `todos` table.
 
 ## Remaining tasks in dependency order
 
-These are the three tasks currently marked `pending`. Their dependency order is
-determined from `todo_deps`; do not begin a task until the standard eligible
-task query identifies it.
+The session `todos` and `todo_deps` queries returned no rows. Therefore, the
+following order is recorded from the current handoff state supplied for this
+snapshot, not verified from the session database. Do not treat it as authoritative
+until the standard dependency query returns the eligible task.
 
-1. `define-continuous-delivery` — Define immutable artifacts, environment
-   promotion, approvals, configuration injection, migration sequencing,
-   health verification, rollback, and AWS deployment boundaries.
-   - Depends on: `configure-continuous-integration` (`done`).
-2. `complete-foundation-documentation` — Complete README and architecture,
-   API, configuration, database, logging, testing, security, CI/CD,
-   deployment, rollback, backup, and recovery documentation.
-   - Depends on: `define-audit-boundary` (`done`),
-     `document-local-development-environment` (`done`), and
-     `define-continuous-delivery` (`pending`).
-3. `review-and-approve-foundation` — Run the foundation checklist,
-   architecture and security reviews, acceptance verification, risk review,
-   and the readiness gate for Identity and Access Management.
-   - Depends on: `configure-continuous-integration` (`done`) and
-     `complete-foundation-documentation` (`pending`).
+1. `implement-authentication`
+2. `implement-user-management`
+3. `implement-roles-and-permissions`
+4. `implement-iam-api-endpoints`
+5. `implement-iam-audit-logging`
+6. `harden-iam-security-controls`
+7. `add-iam-tests`
+8. `review-and-approve-iam`
+
+## Known incident
+
+A migration-integrity violation occurred and was remediated by regenerating the
+local migration history from the Prisma schema. It is resolved, not open. See
+the incident note in `docs/architecture/database-migrations.md` and commits
+`459f2f9` and `e877d1d` for details.
 
 ## Key architectural decisions
 
@@ -137,17 +100,17 @@ database, and AWS is the initial cloud target.
 
 ## Known deferred items
 
-- No persistent local, staging, or production PostgreSQL instance has been
-  provisioned yet. CI now runs integration tests and live migration checks
-  against a temporary, ephemeral PostgreSQL service for each workflow run;
-  these checks must not be fabricated or replaced with SQLite outside that
-  CI service.
+- A working local PostgreSQL database now exists through
+  `deploy/local/compose.yml`. Use Docker Compose (`docker compose`), not Podman:
+  the container-tool configuration defaults to Podman, but Podman is not
+  installed on this host. Docker must be used every time for this local service.
 - `buildIdentity` from the version endpoint is currently the intentional
   placeholder `name@version`, pending real Git SHA or CI build metadata.
 
 ## Instructions for continuing
 
-1. Run the standard eligible-task query:
+1. Run the standard eligible-task query and confirm the next task from the
+   actual `todos` and `todo_deps` tables:
 
    ```sql
    SELECT t.id, t.title, t.status FROM todos t
@@ -164,9 +127,12 @@ database, and AWS is the initial cloud target.
    ```
 
 2. Implement **only** the task returned by that query.
-3. Verify the work with real command output, not summaries.
-4. Commit the completed task in its own commit.
-5. Mark only that task `done` after acceptance criteria and validation are
+3. Always obtain raw `cat`, `git`, and test output; never trust a summary of
+   file contents.
+4. Verify migrations are generated only by Prisma itself and are never
+   hand-edited; see the migration incident note for why.
+5. Commit the completed task in its own commit.
+6. Mark only that task `done` after acceptance criteria and validation are
    satisfied, then stop.
 
 All decisions and architecture live in `docs/`, especially
