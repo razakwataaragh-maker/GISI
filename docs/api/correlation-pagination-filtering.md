@@ -17,6 +17,22 @@ Rules:
 - Do not use correlation IDs as authentication or authorization credentials.
 - Bound length and character set to prevent log injection.
 
+Implementation:
+
+- The Fastify `correlationIdPlugin` runs during the `onRequest` lifecycle hook.
+- The request header is read case-insensitively as `X-Correlation-ID`.
+- Valid values contain only ASCII letters, digits, `.`, `_`, `:`, or `-`, and
+  are 1-128 characters long.
+- Invalid or missing values are replaced with a cryptographically generated
+  UUID v4.
+- The resolved value is available as `request.correlationId` and the
+  request-scoped `request.applicationLogger` is a child logger containing
+  `correlationId`.
+- Every response receives the `X-Correlation-ID` header, including requests
+  that supplied an invalid value.
+- Error handlers must use `request.correlationId` when constructing error
+  responses; correlation IDs are operational references, not secrets.
+
 ## Pagination
 
 Collection endpoints use page-based pagination by default:
@@ -67,4 +83,3 @@ Rules:
 - Invalid fields or directions return `422`.
 - Sorting must not allow raw SQL or provider expressions from clients.
 - Sensitive or unauthorized fields must not be sortable.
-

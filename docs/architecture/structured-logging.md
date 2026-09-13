@@ -32,8 +32,9 @@ Contextual records may include:
 - `correlationId`: request/process correlation identifier when available
 - `userId`: approved non-secret actor identifier when operationally required
 
-Correlation ID propagation is owned by the separate correlation-identifier task.
-This logger only preserves an injected value.
+The correlation-identifier plugin creates a request-scoped child logger with
+the resolved `correlationId`. This logger only preserves the injected value; it
+does not generate or authenticate correlation IDs.
 
 ## Severity
 
