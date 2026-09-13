@@ -83,6 +83,7 @@ model RolePermission {
   status             RolePermissionStatus
   assignedAt         DateTime             @map("assigned_at")
   assignedBy         String               @map("assigned_by")
+  assignmentReason   String               @map("assignment_reason")
   revokedAt          DateTime?            @map("revoked_at")
   revokedBy          String?              @map("revoked_by")
   revocationReason   String?              @map("revocation_reason")
@@ -93,7 +94,6 @@ model RolePermission {
   role       Role               @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   permission PermissionReference @relation(fields: [permissionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
-  @@unique([roleId, permissionId])
   @@index([roleId, status])
   @@index([permissionId, status])
   @@map("role_permissions")
@@ -109,6 +109,7 @@ model UserRoleAssignment {
   revokedAt          DateTime?                 @map("revoked_at")
   revokedBy          String?                   @map("revoked_by")
   assignmentReason   String                    @map("assignment_reason")
+  revocationReason   String?                   @map("revocation_reason")
   createdAt          DateTime                  @default(now()) @map("created_at")
   updatedAt          DateTime                  @updatedAt @map("updated_at")
   changeReference    String?                   @map("change_reference")

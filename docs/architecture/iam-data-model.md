@@ -111,6 +111,7 @@ Conceptual fields:
 - active/revoked status;
 - `assignedAt`;
 - assigning actor or system-process reference;
+- assignment reason;
 - `revokedAt`, revoking actor, and revocation reason where applicable;
 - created/updated timestamps and approved change reference where required.
 
@@ -133,7 +134,7 @@ Conceptual fields:
 - assigning actor or explicit system actor;
 - `revokedAt` when revoked;
 - revoking actor or explicit system actor when revoked;
-- assignment/revocation reason;
+- assignment reason and revocation reason where applicable;
 - created/updated timestamps;
 - approved change or delegation reference where applicable.
 
@@ -179,7 +180,8 @@ The eventual PostgreSQL schema and migration must enforce, at minimum:
 - a unique Cognito subject mapping so one subject cannot map to multiple
   internal users;
 - a unique stable role key;
-- a unique active role-permission relationship for a role and permission;
+- at most one active role-permission relationship for a role and permission,
+  while allowing historical revoked relationships to remain preserved;
 - explicit foreign keys from assignments to their owned user, role, and
   permission references;
 - restricted/no-action deletion behavior for historical and auditable rows;
