@@ -1,3 +1,18 @@
+/*
+  Warnings:
+
+  - Added the required column `assignment_reason` to the `role_permissions` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- DropIndex
+DROP INDEX "role_permissions_role_id_permission_id_key";
+
+-- AlterTable
+ALTER TABLE "role_permissions" ADD COLUMN     "assignment_reason" TEXT NOT NULL;
+
+-- AlterTable
+ALTER TABLE "user_role_assignments" ADD COLUMN     "revocation_reason" TEXT;
+
 -- CreateTable
 CREATE TABLE "audit_events" (
     "id" UUID NOT NULL,
@@ -33,19 +48,3 @@ CREATE INDEX "audit_events_target_type_target_id_occurred_at_idx" ON "audit_even
 
 -- CreateIndex
 CREATE INDEX "audit_events_correlation_id_idx" ON "audit_events"("correlation_id");
-
--- Defense in depth: the application role may append audit records but may not
--- mutate or delete accepted records.
-CREATE FUNCTION reject_audit_event_mutation()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RAISE EXCEPTION 'audit_events is append-only';
-END;
-$$;
-
-CREATE TRIGGER audit_events_append_only
-BEFORE UPDATE OR DELETE ON "audit_events"
-FOR EACH ROW
-EXECUTE FUNCTION reject_audit_event_mutation();
