@@ -106,6 +106,24 @@ describe('CognitoJwtVerifier', () => {
             failure: { code: 'WRONG_ISSUER' },
         });
     });
+
+    it('rejects a token with the wrong audience', async () => {
+        const wrongAudience = await new SignJWT({
+            sub: 'cognito-subject',
+            token_use: 'id',
+        })
+            .setProtectedHeader({ alg: 'RS256', kid })
+            .setIssuer(issuer)
+            .setAudience('wrong-client')
+            .setIssuedAt()
+            .setExpirationTime('1h')
+            .sign(signingKey);
+
+        await expect(verifier().verify(wrongAudience)).resolves.toEqual({
+            ok: false,
+            failure: { code: 'WRONG_AUDIENCE' },
+        });
+    });
 });
 
 describe('AuthenticateUser', () => {
@@ -214,6 +232,34 @@ describe('AuthenticateUser', () => {
             actorType: 'anonymous',
             targetId: 'user-1',
             reason: 'INACTIVE_ACCOUNT',
+        });
+    });
+
+    it('denies authentication when the success audit event cannot be written', async () => {
+        const service = new AuthenticateUser({
+            tokenVerifier: {
+                verify: async () => ({
+                    ok: true,
+                    identity: { subject: 'known', tokenUse: 'id' },
+                }),
+            },
+            userRepository: {
+                findByCognitoSubject: async () => ({
+                    id: 'user-1',
+                    cognitoSubject: 'known',
+                    status: 'ACTIVE',
+                }),
+            },
+            auditWriter: {
+                append: async () => {
+                    throw new Error('audit unavailable');
+                },
+            },
+        });
+
+        await expect(service.execute({ token: 'opaque' })).resolves.toEqual({
+            ok: false,
+            failure: { code: 'DEPENDENCY_ERROR', reason: 'AUDIT_WRITE_FAILED' },
         });
     });
 });

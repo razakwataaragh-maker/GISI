@@ -39,6 +39,12 @@ one forced refresh for key rotation. Retrieval and verification failures fail
 closed; network/provider inability to retrieve keys is returned as the
 provider-neutral `DEPENDENCY_ERROR`.
 
+Authentication is fail-closed on audit persistence as well: after token
+verification, principal mapping, and account-status checks succeed, GISI does
+not return a successful authentication result unless the corresponding
+`login_success` audit event is written. Consequently, an audit-system outage
+is intentionally a full authentication outage until auditability is restored.
+
 ## Token verification flow
 
 The application/API boundary passes the presented bearer token to the
