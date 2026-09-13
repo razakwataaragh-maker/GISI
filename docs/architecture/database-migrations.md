@@ -70,3 +70,18 @@ database and a secret supplied through `DATABASE_URL`. No live PostgreSQL
 infrastructure is currently provisioned in this repository, so live migration
 application and drift checks are deferred rather than fabricated. Schema
 validation, client generation, and empty-diff checks remain runnable locally.
+
+## Migration integrity incident
+
+On 2026-09-13, the solo local development database was reset and the IAM
+assignment-history migration and its dependent audit migration were regenerated
+from `prisma/schema.prisma` after hand-touched SQL caused a migration-integrity
+violation. The regenerated migrations were applied to a clean local PostgreSQL
+database and verified with `prisma migrate status` and PostgreSQL schema
+inspection.
+
+This is a recorded example of what not to do: migration SQL and Prisma migration
+checksums must never be edited manually, and checksum overrides or manual `psql`
+changes must not be used to bypass Prisma integrity checks. For shared,
+staging, or production databases, use a reviewed forward-fix migration instead
+of resetting history.
