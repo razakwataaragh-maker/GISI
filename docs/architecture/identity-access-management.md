@@ -12,9 +12,9 @@ the boundary that future modules use to authenticate a request and authorize
 an action without depending on Cognito, IAM persistence details, or another
 module's internals.
 
-This document defines architecture only. It does not define the IAM data
-model, implement authentication or authorization logic, add endpoints, or
-create database migrations.
+This document defines the IAM architecture and provider-neutral boundaries.
+Authentication verification and principal mapping are implemented for Phase 1;
+authorization, HTTP endpoints, and database migrations remain separate tasks.
 
 ## Ownership boundary
 
@@ -59,10 +59,10 @@ create a competing application-managed primary session system.
 
 ## Application-owned contracts
 
-The contracts below are conceptual binding contracts for the IAM module. Their
-concrete TypeScript definitions belong to later implementation tasks and must
-remain free of Fastify, Prisma, AWS SDK, Cognito, and infrastructure-adapter
-types.
+The contracts below are binding contracts for the IAM module. Their concrete
+TypeScript definitions live in
+`src/modules/identity-access/contracts/authentication.ts` and remain free of
+Fastify, Prisma, AWS SDK, Cognito, and infrastructure-adapter types.
 
 ### Authentication verifier
 

@@ -1,6 +1,6 @@
 # GISI Authentication Architecture
 
-- **Status:** Defined for Phase 1
+- **Status:** Implemented for Phase 1 authentication verification and mapping
 - **Scope:** Cognito-backed authentication verification and lifecycle
 - **Governing decisions:** [ADR 0005](../decisions/0005-authentication.md),
   [ADR 0020](../decisions/0020-iam-module-boundary.md)
@@ -13,9 +13,31 @@ provider-neutral authentication contract, verification result, internal
 principal mapping, account-status enforcement, authentication context, and
 safe audit events.
 
-This document defines the verification and lifecycle design only. It does not
-define IAM tables or Prisma models, implement authentication logic, or add
-HTTP endpoints.
+This document defines the verification and lifecycle design. HTTP endpoints and
+Fastify wiring remain outside this task.
+
+## Current implementation
+
+The provider-neutral contracts and application orchestration are implemented
+under `src/modules/identity-access/`:
+
+- `contracts/authentication.ts` defines the token-verifier, pre-provisioned user
+  repository, authentication context, and safe result contracts.
+- `application/authenticate-user.ts` verifies, maps, checks account status, and
+  emits safe `login_success`, `login_failure`,
+  `authentication_denied_unmapped_subject`, and
+  `authentication_denied_inactive_account` events through the real
+  `AuditWriter` contract.
+- `infrastructure/prisma-user-repository.ts` reads only the pre-provisioned
+  Cognito-subject mapping and current account status.
+
+`src/infrastructure/authentication/cognito-jwt-verifier.ts` is the provider
+adapter. It accepts only RS256 Cognito ID tokens, validates the configured
+issuer, client-id audience, expiry/not-before claims, required subject, and
+`token_use=id`. JWKS keys are cached for 15 minutes and an unknown `kid` causes
+one forced refresh for key rotation. Retrieval and verification failures fail
+closed; network/provider inability to retrieve keys is returned as the
+provider-neutral `DEPENDENCY_ERROR`.
 
 ## Token verification flow
 
