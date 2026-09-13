@@ -32,6 +32,11 @@ The `identity-access` module owns:
 - the application authentication context consumed by use cases;
 - IAM-related audit events through the approved audit contract.
 
+The Phase 1 user-management application boundary now also owns authorized
+provisioning, exact lookup by internal identifier or Cognito subject, approved
+user updates, and explicit account-status transitions. It does not create a
+user during authentication.
+
 IAM is the authority for whether an authenticated principal may perform a GISI
 action. It does not make business decisions owned by Student, Finance,
 Activation, or other modules.

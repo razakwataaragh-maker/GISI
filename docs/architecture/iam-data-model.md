@@ -10,7 +10,8 @@
 
 This document defines the entities, relationships, constraints, and access
 patterns required by the IAM module. The Prisma schema and migration implement
-this model; application behavior remains out of scope.
+this model; application behavior is implemented through the user-management
+application boundary for the current User shape.
 
 All tables described here are owned exclusively by
 `src/modules/identity-access/`. Other modules consume IAM through application

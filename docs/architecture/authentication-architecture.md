@@ -30,6 +30,10 @@ under `src/modules/identity-access/`:
   `AuditWriter` contract.
 - `infrastructure/prisma-user-repository.ts` reads only the pre-provisioned
   Cognito-subject mapping and current account status.
+- `application/manage-users.ts` provides the authorized provisioning and
+  lifecycle operations used to establish and maintain that mapping. Its
+  repository and authorization dependencies are provider-neutral; it does not
+  create Cognito credentials, provider sessions, roles, or permissions.
 
 `src/infrastructure/authentication/cognito-jwt-verifier.ts` is the provider
 adapter. It accepts only RS256 Cognito ID tokens, validates the configured
@@ -105,11 +109,32 @@ The first-seen flow is:
    and links the internal user before the user can use GISI.
 5. Subsequent requests must still pass the internal account-status check.
 
+Provisioning defaults a new internal user to `DEACTIVATED`; an explicitly
+approved active status is also supported. When provisioning is deactivated, an
+explicit, authorized `activate` operation is required before access. The
+application supports only the following status transitions:
+
+| Operation    | Allowed source status | Result        |
+| ------------ | --------------------- | ------------- |
+| `activate`   | `DEACTIVATED`         | `ACTIVE`      |
+| `deactivate` | `ACTIVE`              | `DEACTIVATED` |
+| `suspend`    | `ACTIVE`              | `SUSPENDED`   |
+| `reactivate` | `SUSPENDED`           | `ACTIVE`      |
+
+Each successful provisioning, update, or transition writes a safe
+`identity-access` audit event through the shared `AuditWriter`. Cognito
+subjects are immutable after provisioning, and the current schema exposes no
+profile fields for unrestricted updates; the approved update operation is
+limited to correcting the status-change reason. Status metadata is changed
+only through the explicit lifecycle operations. Lifecycle event names are
+`user_provisioned`, `user_activated`, `user_deactivated`, `user_suspended`, and
+`user_reactivated`.
+
 Pre-provisioning prevents arbitrary Cognito identities from becoming
 authoritative GISI users, preserves institutional ownership of access, and
 ensures roles and permissions are assigned deliberately. It also keeps
-identity creation and authorization auditable. The specific user data model
-and provisioning use cases belong to later IAM tasks.
+identity creation and authorization auditable. The current implementation
+intentionally leaves role and permission administration to later IAM work.
 
 ## Account-status enforcement
 
