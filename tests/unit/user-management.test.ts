@@ -14,6 +14,7 @@ import {
     InvalidUserStatusTransitionError,
     InvalidUserUpdateError,
     UnauthorizedUserManagementError,
+    UserNotFoundError,
 } from '../../src/modules/identity-access/domain/user-management.js';
 
 const actor = { id: 'admin-1', type: 'user' as const };
@@ -397,6 +398,49 @@ describe('ManageUsers', () => {
             outcome: 'failure',
             reason: 'authorization_denied',
             targetId: 'user-1',
+        });
+    });
+
+    it('audits user not found errors for update operations', async () => {
+        const { service, events } = harness();
+
+        await expect(
+            service.update({
+                id: 'non-existent-user',
+                actor,
+                fields: { statusChangeReason: 'test' },
+                reason: 'test',
+            }),
+        ).rejects.toBeInstanceOf(UserNotFoundError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'user_not_found',
+            actorId: actor.id,
+            action: 'update',
+            outcome: 'failure',
+            reason: 'user_not_found',
+            targetId: 'non-existent-user',
+        });
+    });
+
+    it('audits user not found errors for transition operations', async () => {
+        const { service, events } = harness();
+
+        await expect(
+            service.activate({
+                id: 'non-existent-user',
+                actor,
+                reason: 'test',
+            }),
+        ).rejects.toBeInstanceOf(UserNotFoundError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'user_not_found',
+            actorId: actor.id,
+            action: 'activate',
+            outcome: 'failure',
+            reason: 'user_not_found',
+            targetId: 'non-existent-user',
         });
     });
 });

@@ -220,7 +220,21 @@ export class ManageUsers {
             }
         }
 
-        const current = await this.requireUser(input.id);
+        const current = await this.dependencies.userRepository.findById(input.id);
+        if (current === null) {
+            await this.writeAudit({
+                eventName: 'user_not_found',
+                actorId: input.actor.id,
+                actorType: input.actor.type,
+                targetType: 'user',
+                targetId: input.id,
+                action: 'update',
+                outcome: 'failure',
+                reason: 'user_not_found',
+                ...correlation(input.correlationId),
+            });
+            throw new UserNotFoundError(input.id);
+        }
         const user =
             await this.dependencies.userRepository.updateApprovedFields(
                 current.id,
@@ -266,7 +280,22 @@ export class ManageUsers {
             throw error;
         }
 
-        const current = await this.requireUser(input.id);
+        const current = await this.dependencies.userRepository.findById(input.id);
+        if (current === null) {
+            await this.writeAudit({
+                eventName: 'user_not_found',
+                actorId: input.actor.id,
+                actorType: input.actor.type,
+                targetType: 'user',
+                targetId: input.id,
+                action: input.transition,
+                outcome: 'failure',
+                reason: 'user_not_found',
+                ...correlation(input.correlationId),
+            });
+            throw new UserNotFoundError(input.id);
+        }
+
         let status: AccountStatus;
         try {
             status = nextUserStatus(current.status, input.transition);
@@ -335,14 +364,6 @@ export class ManageUsers {
         input: Omit<TransitionUserInput, 'transition'>,
     ): Promise<ManagedUser> {
         return this.transition({ ...input, transition: 'reactivate' });
-    }
-
-    private async requireUser(id: string): Promise<ManagedUser> {
-        const user = await this.dependencies.userRepository.findById(id);
-        if (user === null) {
-            throw new UserNotFoundError(id);
-        }
-        return user;
     }
 
     private async assertAuthorized(
