@@ -71,6 +71,25 @@ Do not skip phases.
 
 ---
 
+## Task Completion Discipline
+
+A task must only be marked `done` in the `todos` table after independent review
+confirms the work is genuinely complete — not immediately after implementation
+and self-testing. This project has caught three real cases where a task was
+marked `done` prematurely:
+
+- `configure-development-quality-tools` (claimed configured tools that did not
+  exist).
+- `configure-continuous-integration` (needed two real bug fixes discovered only
+  by actually running it on GitHub, not locally).
+- `implement-user-management` (marked done before an independent reviewer found
+  and required a missing test for a specific business-risk scenario).
+
+When implementing a task, do not update its status in the `todos` table yourself.
+Leave that to be done only after review confirms the work.
+
+---
+
 ## First Development Task
 
 The first feature is:
