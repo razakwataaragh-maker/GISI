@@ -195,6 +195,24 @@ describe('ManageUsers', () => {
         ).rejects.toBeInstanceOf(InvalidUserStatusTransitionError);
     });
 
+    it('rejects activate for suspended users', async () => {
+        const { service } = harness(
+            user({
+                status: 'SUSPENDED',
+                deactivatedAt: null,
+                suspendedAt: firstTime,
+            }),
+        );
+
+        await expect(
+            service.activate({
+                id: 'user-1',
+                actor,
+                reason: 'invalid suspended-user activation',
+            }),
+        ).rejects.toBeInstanceOf(InvalidUserStatusTransitionError);
+    });
+
     it('allows only approved updates and keeps Cognito subject immutable', async () => {
         const { service } = harness(user());
 
