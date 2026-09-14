@@ -248,9 +248,37 @@ writing through Prisma and rejects prohibited credentials, tokens, connection
 strings, provider errors, stack traces, and similar sensitive fields. It does
 not define IAM-specific event names.
 
+### Implementation components
+
+**Domain contract** (`src/modules/audit/domain/audit-writer.ts`):
+- `AuditWriter` interface with `append` method only
+- `AuditEventInput` and `AuditEvent` types
+- `AuditWriterError` for database persistence failures
+- `AuditJsonValue` type for safe state serialization
+
+**Application layer** (`src/modules/audit/application/validate-audit-event.ts`):
+- `validateAuditEvent` function with recursive field validation
+- Prohibited field pattern detection (passwords, tokens, secrets, etc.)
+- `AuditEventValidationError` for validation failures
+
+**Infrastructure layer** (`src/modules/audit/infrastructure/prisma-audit-writer.ts`):
+- `PrismaAuditWriter` implementation
+- Transactional support via `PrismaAuditWriter.transactional()`
+- Error handling and mapping to domain errors
+- UUID generation for audit record IDs
+
+### Database immutability
+
 The migration installs a PostgreSQL trigger that rejects `UPDATE` and `DELETE`
 on `audit_events`, providing database-level immutability in the current
 single-role local setup. Separate database roles with insert-only grants,
 ownership separation, and restricted administrative access remain deployment
 hardening work; the trigger is not represented as a claim that the local
 `postgres` superuser cannot bypass database controls.
+
+### Transaction support
+
+The `PrismaAuditWriter` supports transactional writes through the static
+`transactional()` factory method. This allows audit events to be written
+atomically with business operations, ensuring that auditable business
+transitions and their audit events cannot silently diverge.

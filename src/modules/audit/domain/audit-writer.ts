@@ -34,3 +34,10 @@ export interface AuditEvent extends AuditEventInput {
 export interface AuditWriter {
     append(event: AuditEventInput): Promise<AuditEvent>;
 }
+
+export class AuditWriterError extends Error {
+    constructor(message: string, public readonly cause?: unknown) {
+        super(message);
+        this.name = 'AuditWriterError';
+    }
+}

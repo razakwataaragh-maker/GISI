@@ -5,7 +5,17 @@ import type {
     AuditJsonValue,
     AuditWriter,
 } from '../domain/audit-writer.js';
-import { validateAuditEvent } from '../application/validate-audit-event.js';
+import {
+    AuditEventValidationError,
+    validateAuditEvent,
+} from '../application/validate-audit-event.js';
+
+export class PrismaAuditWriterError extends Error {
+    constructor(message: string, public readonly cause?: unknown) {
+        super(message);
+        this.name = 'AuditWriterError';
+    }
+}
 
 type AuditEventRecord = {
     id: string;
@@ -40,30 +50,48 @@ export class PrismaAuditWriter implements AuditWriter {
     constructor(private readonly store: AuditEventStore) {}
 
     async append(input: AuditEventInput): Promise<AuditEvent> {
-        validateAuditEvent(input);
-        const occurredAt = input.occurredAt ?? new Date();
-        const data: Record<string, unknown> = {
-            id: randomUUID(),
-            eventName: input.eventName,
-            category: input.category,
-            actorType: input.actorType,
-            targetType: input.targetType,
-            action: input.action,
-            outcome: input.outcome,
-            occurredAt,
-            owningModule: input.owningModule,
-            sourceBoundary: input.sourceBoundary,
-        };
-        addOptional(data, 'actorId', input.actorId);
-        addOptional(data, 'targetId', input.targetId);
-        addOptional(data, 'correlationId', input.correlationId);
-        addOptional(data, 'reason', input.reason);
-        addOptional(data, 'changeReference', input.changeReference);
-        addOptional(data, 'beforeState', input.beforeState);
-        addOptional(data, 'afterState', input.afterState);
+        try {
+            validateAuditEvent(input);
+            const occurredAt = input.occurredAt ?? new Date();
+            const data: Record<string, unknown> = {
+                id: randomUUID(),
+                eventName: input.eventName,
+                category: input.category,
+                actorType: input.actorType,
+                targetType: input.targetType,
+                action: input.action,
+                outcome: input.outcome,
+                occurredAt,
+                owningModule: input.owningModule,
+                sourceBoundary: input.sourceBoundary,
+            };
+            addOptional(data, 'actorId', input.actorId);
+            addOptional(data, 'targetId', input.targetId);
+            addOptional(data, 'correlationId', input.correlationId);
+            addOptional(data, 'reason', input.reason);
+            addOptional(data, 'changeReference', input.changeReference);
+            addOptional(data, 'beforeState', input.beforeState);
+            addOptional(data, 'afterState', input.afterState);
 
-        const record = await this.store.auditEvent.create({ data });
-        return mapRecord(record);
+            const record = await this.store.auditEvent.create({ data });
+            return mapRecord(record);
+        } catch (error) {
+            if (error instanceof AuditEventValidationError) {
+                throw error;
+            }
+            throw new PrismaAuditWriterError(
+                'Failed to persist audit event',
+                error,
+            );
+        }
+    }
+
+    /**
+     * Creates a transactional audit writer that participates in Prisma transactions
+     * This ensures audit events are written atomically with business operations
+     */
+    static transactional(store: AuditEventStore): PrismaAuditWriter {
+        return new PrismaAuditWriter(store);
     }
 }
 

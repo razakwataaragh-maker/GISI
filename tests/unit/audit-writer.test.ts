@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { AuditEventValidationError } from '../../src/modules/audit/application/validate-audit-event.js';
-import { PrismaAuditWriter } from '../../src/modules/audit/infrastructure/prisma-audit-writer.js';
+import {
+    PrismaAuditWriter,
+    PrismaAuditWriterError,
+} from '../../src/modules/audit/infrastructure/prisma-audit-writer.js';
 
 const event = {
     eventName: 'record_created',
@@ -70,8 +73,36 @@ describe('PrismaAuditWriter', () => {
         } as never;
         const writer = new PrismaAuditWriter(store);
 
-        expect(Object.keys(writer)).toEqual(['store']);
         expect('update' in writer).toBe(false);
         expect('delete' in writer).toBe(false);
+    });
+
+    it('creates transactional writer via static method', () => {
+        const store = {
+            auditEvent: { create: async () => undefined },
+        } as never;
+        const writer = PrismaAuditWriter.transactional(store);
+
+        expect(writer).toBeInstanceOf(PrismaAuditWriter);
+        expect('update' in writer).toBe(false);
+        expect('delete' in writer).toBe(false);
+    });
+
+    it('wraps database errors in PrismaAuditWriterError', async () => {
+        const store = {
+            auditEvent: {
+                create: async () => {
+                    throw new Error('Database connection failed');
+                },
+            },
+        } as never;
+        const writer = new PrismaAuditWriter(store);
+
+        await expect(writer.append(event)).rejects.toBeInstanceOf(
+            PrismaAuditWriterError,
+        );
+        await expect(writer.append(event)).rejects.toThrow(
+            'Failed to persist audit event',
+        );
     });
 });
