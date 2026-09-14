@@ -31,8 +31,6 @@ export interface ProvisionUserInput {
     readonly reason: string;
     /** Explicit provisioning may establish an active account when approved. */
     readonly status?: 'ACTIVE' | 'DEACTIVATED';
-    /** @deprecated Use status. Kept as an application-boundary alias. */
-    readonly initialStatus?: 'ACTIVE' | 'DEACTIVATED';
     readonly correlationId?: string;
 }
 

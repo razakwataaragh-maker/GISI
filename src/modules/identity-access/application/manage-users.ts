@@ -3,6 +3,7 @@ import type {
     AuditWriter,
 } from '../../audit/domain/audit-writer.js';
 import type {
+    AccountStatus,
     FindUserInput,
     ManagedUser,
     ProvisionUserInput,
@@ -17,6 +18,7 @@ import {
     DuplicateCognitoSubjectError,
     ImmutableCognitoSubjectError,
     InvalidUserSearchError,
+    InvalidUserStatusTransitionError,
     InvalidUserUpdateError,
     UserNotFoundError,
     UnauthorizedUserManagementError,
@@ -39,17 +41,44 @@ export class ManageUsers {
     }
 
     async provision(input: ProvisionUserInput): Promise<ManagedUser> {
-        await this.assertAuthorized(input.actor, 'user.provision');
+        try {
+            await this.assertAuthorized(input.actor, 'user.provision');
+        } catch (error) {
+            if (error instanceof UnauthorizedUserManagementError) {
+                await this.writeAudit({
+                    eventName: 'authorization_denied',
+                    actorId: input.actor.id,
+                    actorType: input.actor.type,
+                    targetType: 'user',
+                    action: 'provision',
+                    outcome: 'failure',
+                    reason: 'authorization_denied',
+                    ...correlation(input.correlationId),
+                });
+            }
+            throw error;
+        }
+
         const existing =
             await this.dependencies.userRepository.findByCognitoSubject(
                 input.cognitoSubject,
             );
         if (existing !== null) {
+            await this.writeAudit({
+                eventName: 'user_provision_failed',
+                actorId: input.actor.id,
+                actorType: input.actor.type,
+                targetType: 'user',
+                action: 'provision',
+                outcome: 'failure',
+                reason: 'duplicate_cognito_subject',
+                ...correlation(input.correlationId),
+            });
             throw new DuplicateCognitoSubjectError();
         }
 
         const now = this.clock();
-        const status = input.status ?? input.initialStatus ?? 'DEACTIVATED';
+        const status = input.status ?? 'DEACTIVATED';
         const user = await this.dependencies.userRepository.create({
             cognitoSubject: input.cognitoSubject,
             status,
@@ -94,7 +123,23 @@ export class ManageUsers {
     }
 
     async findById(id: string, actor: UserActor): Promise<ManagedUser | null> {
-        await this.assertAuthorized(actor, 'user.read', id);
+        try {
+            await this.assertAuthorized(actor, 'user.read', id);
+        } catch (error) {
+            if (error instanceof UnauthorizedUserManagementError) {
+                await this.writeAudit({
+                    eventName: 'authorization_denied',
+                    actorId: actor.id,
+                    actorType: actor.type,
+                    targetType: 'user',
+                    targetId: id,
+                    action: 'read',
+                    outcome: 'failure',
+                    reason: 'authorization_denied',
+                });
+            }
+            throw error;
+        }
         return this.dependencies.userRepository.findById(id);
     }
 
@@ -102,22 +147,79 @@ export class ManageUsers {
         cognitoSubject: string,
         actor: UserActor,
     ): Promise<ManagedUser | null> {
-        await this.assertAuthorized(actor, 'user.read');
+        try {
+            await this.assertAuthorized(actor, 'user.read');
+        } catch (error) {
+            if (error instanceof UnauthorizedUserManagementError) {
+                await this.writeAudit({
+                    eventName: 'authorization_denied',
+                    actorId: actor.id,
+                    actorType: actor.type,
+                    targetType: 'user',
+                    action: 'read',
+                    outcome: 'failure',
+                    reason: 'authorization_denied',
+                });
+            }
+            throw error;
+        }
         return this.dependencies.userRepository.findByCognitoSubject(
             cognitoSubject,
         );
     }
 
     async update(input: UpdateUserInput): Promise<ManagedUser> {
-        await this.assertAuthorized(input.actor, 'user.update', input.id);
+        try {
+            await this.assertAuthorized(input.actor, 'user.update', input.id);
+        } catch (error) {
+            if (error instanceof UnauthorizedUserManagementError) {
+                await this.writeAudit({
+                    eventName: 'authorization_denied',
+                    actorId: input.actor.id,
+                    actorType: input.actor.type,
+                    targetType: 'user',
+                    targetId: input.id,
+                    action: 'update',
+                    outcome: 'failure',
+                    reason: 'authorization_denied',
+                    ...correlation(input.correlationId),
+                });
+            }
+            throw error;
+        }
+
         if (input.fields.cognitoSubject !== undefined) {
+            await this.writeAudit({
+                eventName: 'user_update_failed',
+                actorId: input.actor.id,
+                actorType: input.actor.type,
+                targetType: 'user',
+                targetId: input.id,
+                action: 'update',
+                outcome: 'failure',
+                reason: 'immutable_cognito_subject',
+                ...correlation(input.correlationId),
+            });
             throw new ImmutableCognitoSubjectError();
         }
+
         for (const field of Object.keys(input.fields)) {
             if (field !== 'statusChangeReason') {
+                await this.writeAudit({
+                    eventName: 'user_update_failed',
+                    actorId: input.actor.id,
+                    actorType: input.actor.type,
+                    targetType: 'user',
+                    targetId: input.id,
+                    action: 'update',
+                    outcome: 'failure',
+                    reason: 'invalid_user_update_field',
+                    ...correlation(input.correlationId),
+                });
                 throw new InvalidUserUpdateError(field);
             }
         }
+
         const current = await this.requireUser(input.id);
         const user =
             await this.dependencies.userRepository.updateApprovedFields(
@@ -145,9 +247,47 @@ export class ManageUsers {
 
     async transition(input: TransitionUserInput): Promise<ManagedUser> {
         const action = `user.${input.transition}` as UserManagementAction;
-        await this.assertAuthorized(input.actor, action, input.id);
+        try {
+            await this.assertAuthorized(input.actor, action, input.id);
+        } catch (error) {
+            if (error instanceof UnauthorizedUserManagementError) {
+                await this.writeAudit({
+                    eventName: 'authorization_denied',
+                    actorId: input.actor.id,
+                    actorType: input.actor.type,
+                    targetType: 'user',
+                    targetId: input.id,
+                    action: input.transition,
+                    outcome: 'failure',
+                    reason: 'authorization_denied',
+                    ...correlation(input.correlationId),
+                });
+            }
+            throw error;
+        }
+
         const current = await this.requireUser(input.id);
-        const status = nextUserStatus(current.status, input.transition);
+        let status: AccountStatus;
+        try {
+            status = nextUserStatus(current.status, input.transition);
+        } catch (error) {
+            if (error instanceof InvalidUserStatusTransitionError) {
+                await this.writeAudit({
+                    eventName: 'user_transition_failed',
+                    actorId: input.actor.id,
+                    actorType: input.actor.type,
+                    targetType: 'user',
+                    targetId: input.id,
+                    action: input.transition,
+                    outcome: 'failure',
+                    reason: 'invalid_status_transition',
+                    beforeState: { status: current.status },
+                    ...correlation(input.correlationId),
+                });
+            }
+            throw error;
+        }
+
         const now = this.clock();
         const user = await this.dependencies.userRepository.update(input.id, {
             status,

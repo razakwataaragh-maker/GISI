@@ -12,6 +12,7 @@ import {
     DuplicateCognitoSubjectError,
     ImmutableCognitoSubjectError,
     InvalidUserStatusTransitionError,
+    InvalidUserUpdateError,
     UnauthorizedUserManagementError,
 } from '../../src/modules/identity-access/domain/user-management.js';
 
@@ -111,12 +112,19 @@ describe('ManageUsers', () => {
 
     it('does not provision when authorization denies the operation', async () => {
         const { repository } = harness();
+        const events: AuditEventInput[] = [];
         const denied = new ManageUsers({
             userRepository: repository,
             authorization: { authorize: async () => false },
             auditWriter: {
-                append: async () => {
-                    throw new Error('not called');
+                append: async (event) => {
+                    events.push(event);
+                    return {
+                        id: `audit-${events.length}`,
+                        ...event,
+                        occurredAt: event.occurredAt ?? firstTime,
+                        recordedAt: firstTime,
+                    };
                 },
             },
         });
@@ -128,10 +136,18 @@ describe('ManageUsers', () => {
                 reason: 'not approved',
             }),
         ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
+
+        expect(events[0]).toMatchObject({
+            eventName: 'authorization_denied',
+            actorId: actor.id,
+            action: 'provision',
+            outcome: 'failure',
+            reason: 'authorization_denied',
+        });
     });
 
     it('rejects duplicate Cognito subjects', async () => {
-        const { service } = harness(user());
+        const { service, events } = harness(user());
 
         await expect(
             service.provision({
@@ -140,6 +156,14 @@ describe('ManageUsers', () => {
                 reason: 'duplicate',
             }),
         ).rejects.toBeInstanceOf(DuplicateCognitoSubjectError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'user_provision_failed',
+            actorId: actor.id,
+            action: 'provision',
+            outcome: 'failure',
+            reason: 'duplicate_cognito_subject',
+        });
     });
 
     it('searches by internal id and Cognito subject through repository ports', async () => {
@@ -196,7 +220,7 @@ describe('ManageUsers', () => {
     });
 
     it('rejects activate for suspended users', async () => {
-        const { service } = harness(
+        const { service, events } = harness(
             user({
                 status: 'SUSPENDED',
                 deactivatedAt: null,
@@ -211,10 +235,19 @@ describe('ManageUsers', () => {
                 reason: 'invalid suspended-user activation',
             }),
         ).rejects.toBeInstanceOf(InvalidUserStatusTransitionError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'user_transition_failed',
+            actorId: actor.id,
+            action: 'activate',
+            outcome: 'failure',
+            reason: 'invalid_status_transition',
+            beforeState: { status: 'SUSPENDED' },
+        });
     });
 
     it('allows only approved updates and keeps Cognito subject immutable', async () => {
-        const { service } = harness(user());
+        const { service, events } = harness(user());
 
         const updated = await service.update({
             id: 'user-1',
@@ -232,5 +265,138 @@ describe('ManageUsers', () => {
                 reason: 'replace identity',
             }),
         ).rejects.toBeInstanceOf(ImmutableCognitoSubjectError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'user_update_failed',
+            actorId: actor.id,
+            action: 'update',
+            outcome: 'failure',
+            reason: 'immutable_cognito_subject',
+        });
+
+        await expect(
+            service.update({
+                id: 'user-1',
+                actor,
+                fields: { invalidField: 'test' } as never,
+                reason: 'invalid field',
+            }),
+        ).rejects.toBeInstanceOf(InvalidUserUpdateError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'user_update_failed',
+            actorId: actor.id,
+            action: 'update',
+            outcome: 'failure',
+            reason: 'invalid_user_update_field',
+        });
+    });
+
+    it('audits authorization denials for user read operations', async () => {
+        const { repository } = harness();
+        const events: AuditEventInput[] = [];
+        const denied = new ManageUsers({
+            userRepository: repository,
+            authorization: { authorize: async () => false },
+            auditWriter: {
+                append: async (event) => {
+                    events.push(event);
+                    return {
+                        id: `audit-${events.length}`,
+                        ...event,
+                        occurredAt: event.occurredAt ?? firstTime,
+                        recordedAt: firstTime,
+                    };
+                },
+            },
+        });
+
+        await expect(
+            denied.findById('user-1', actor),
+        ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'authorization_denied',
+            actorId: actor.id,
+            action: 'read',
+            outcome: 'failure',
+            reason: 'authorization_denied',
+            targetId: 'user-1',
+        });
+    });
+
+    it('audits authorization denials for user update operations', async () => {
+        const { repository } = harness();
+        const events: AuditEventInput[] = [];
+        const denied = new ManageUsers({
+            userRepository: repository,
+            authorization: { authorize: async () => false },
+            auditWriter: {
+                append: async (event) => {
+                    events.push(event);
+                    return {
+                        id: `audit-${events.length}`,
+                        ...event,
+                        occurredAt: event.occurredAt ?? firstTime,
+                        recordedAt: firstTime,
+                    };
+                },
+            },
+        });
+
+        await expect(
+            denied.update({
+                id: 'user-1',
+                actor,
+                fields: { statusChangeReason: 'test' },
+                reason: 'test',
+            }),
+        ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'authorization_denied',
+            actorId: actor.id,
+            action: 'update',
+            outcome: 'failure',
+            reason: 'authorization_denied',
+            targetId: 'user-1',
+        });
+    });
+
+    it('audits authorization denials for user transition operations', async () => {
+        const { repository } = harness();
+        const events: AuditEventInput[] = [];
+        const denied = new ManageUsers({
+            userRepository: repository,
+            authorization: { authorize: async () => false },
+            auditWriter: {
+                append: async (event) => {
+                    events.push(event);
+                    return {
+                        id: `audit-${events.length}`,
+                        ...event,
+                        occurredAt: event.occurredAt ?? firstTime,
+                        recordedAt: firstTime,
+                    };
+                },
+            },
+        });
+
+        await expect(
+            denied.activate({
+                id: 'user-1',
+                actor,
+                reason: 'test',
+            }),
+        ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
+
+        expect(events[events.length - 1]).toMatchObject({
+            eventName: 'authorization_denied',
+            actorId: actor.id,
+            action: 'activate',
+            outcome: 'failure',
+            reason: 'authorization_denied',
+            targetId: 'user-1',
+        });
     });
 });
