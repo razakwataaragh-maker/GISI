@@ -172,37 +172,34 @@ describe('AuthenticateUser', () => {
         ['INVALID_SIGNATURE', 'UNAUTHORIZED'],
         ['EXPIRED_TOKEN', 'UNAUTHORIZED'],
         ['WRONG_ISSUER', 'UNAUTHORIZED'],
-    ] as const)(
-        'records a safe audit event for %s',
-        async (reason, code) => {
-            const events: AuditEventInput[] = [];
-            const service = new AuthenticateUser({
-                tokenVerifier: {
-                    verify: async () => ({
-                        ok: false,
-                        failure: { code: reason },
-                    }),
-                },
-                userRepository: {
-                    findByCognitoSubject: async () => null,
-                },
-                auditWriter: auditWriter(events),
-            });
+    ] as const)('records a safe audit event for %s', async (reason, code) => {
+        const events: AuditEventInput[] = [];
+        const service = new AuthenticateUser({
+            tokenVerifier: {
+                verify: async () => ({
+                    ok: false,
+                    failure: { code: reason },
+                }),
+            },
+            userRepository: {
+                findByCognitoSubject: async () => null,
+            },
+            auditWriter: auditWriter(events),
+        });
 
-            await expect(service.execute({ token: 'opaque' })).resolves.toEqual({
-                ok: false,
-                failure: { code, reason },
-            });
-            expect(events).toHaveLength(1);
-            expect(events[0]).toMatchObject({
-                eventName: 'login_failure',
-                actorType: 'anonymous',
-                outcome: 'failure',
-                reason,
-            });
-            expect(events[0]).not.toHaveProperty('token');
-        },
-    );
+        await expect(service.execute({ token: 'opaque' })).resolves.toEqual({
+            ok: false,
+            failure: { code, reason },
+        });
+        expect(events).toHaveLength(1);
+        expect(events[0]).toMatchObject({
+            eventName: 'login_failure',
+            actorType: 'anonymous',
+            outcome: 'failure',
+            reason,
+        });
+        expect(events[0]).not.toHaveProperty('token');
+    });
 
     it('forbids a deactivated mapped user', async () => {
         const events: AuditEventInput[] = [];

@@ -28,24 +28,26 @@ describe('PrismaAuditWriter', () => {
             actorId: event.actorId,
             targetId: event.targetId,
             recordedAt: new Date('2026-09-13T17:00:01.000Z'),
+            changeReference: null,
             beforeState: event.beforeState,
             afterState: event.afterState,
         };
-        const store = {
+        const store: ConstructorParameters<typeof PrismaAuditWriter>[0] = {
             auditEvent: {
-                create: async ({ data }: { data: unknown }) => ({
+                create: async ({ data }) => ({
                     ...stored,
-                    ...(data as object),
+                    ...data,
                 }),
             },
-        } as never;
+        };
         const writer = new PrismaAuditWriter(store);
 
-        await expect(writer.append(event)).resolves.toMatchObject({
-            id: expect.any(String),
+        const result = await writer.append(event);
+        expect(result).toMatchObject({
             eventName: 'record_created',
             correlationId: 'correlation-1',
         });
+        expect(result.id).toEqual(expect.any(String));
     });
 
     it('rejects prohibited fields in state', async () => {
