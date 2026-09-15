@@ -98,6 +98,22 @@ local migration history from the Prisma schema. It is resolved, not open. See
 the incident note in `docs/architecture/database-migrations.md` and commits
 `459f2f9` and `e877d1d` for details.
 
+## Known issue under investigation
+
+A database-level safeguard preventing Finance Officer roles from ever being
+granted Activation-domain permissions was designed and approved during
+`implement-roles-and-permissions` Stage 1, but investigation on 2026-09-15
+confirmed that the safeguard is absent from the current schema, migrations,
+and live database. The cause is currently unknown and remains under
+investigation.
+
+The new task
+`reconcile-iam-role-permission-domain-safeguards` was created to restore or
+replace the missing safeguard with reviewed schema, trigger, migration-test,
+and documentation coverage. It was wired as a dependency of
+`harden-iam-security-controls`, blocking further IAM hardening work until this
+issue is resolved.
+
 ## Key architectural decisions
 
 The binding decisions and architecture documentation live under `docs/`.
