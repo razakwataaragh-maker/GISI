@@ -53,6 +53,7 @@ model Role {
   name               String
   description        String?
   status             RoleStatus
+  rank               Int        @default(0)
   createdAt          DateTime   @default(now()) @map("created_at")
   updatedAt          DateTime   @updatedAt @map("updated_at")
   createdBy          String     @map("created_by")
@@ -74,6 +75,17 @@ model PermissionReference {
   rolePermissions RolePermission[]
 
   @@map("permission_references")
+}
+
+model BootstrapControl {
+  id              String    @id @default("singleton") @db.VarChar(32)
+  consumedAt      DateTime? @map("consumed_at")
+  consumedBy      String?   @map("consumed_by")
+  changeReference String?   @map("change_reference")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("iam_bootstrap_control")
 }
 
 model RolePermission {

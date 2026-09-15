@@ -61,10 +61,32 @@ Conceptual fields:
 - unique stable role key;
 - human-readable name and safe description;
 - lifecycle status, including active and inactive/deactivated;
+- **privilege rank** (integer, higher = more privileged) for delegation authority;
 - `createdAt` and `updatedAt`;
 - creation and last-modification actor references;
 - deactivation timestamp, actor, and reason where applicable;
 - optional version or change reference when role definitions are revised.
+
+### Privilege rank
+
+The privilege rank implements the delegation-authority requirement from
+authorization-architecture.md: an actor may only assign or revoke a role whose
+rank is strictly less than the highest rank among the actor's own active roles.
+
+- Rank 0 = lowest privilege level
+- Higher integer values = more privileged
+- System-administrator role occupies the highest rank
+- Rank is set at role creation and may be modified only through authorized
+  role operations
+- Bootstrap establishes the initial system-administrator with the highest rank
+
+This design choice (explicit rank/tier) was approved to provide:
+
+- Direct mapping to "grant authority" comparisons
+- Phase 1 simplicity and clear auditability
+- Natural enforcement of bootstrap authority constraints
+- O(1) performance for delegation checks
+- Clear audit trails: "Actor with rank X attempted to assign role with rank Y"
 
 Deactivation prevents the role from contributing to new authorization
 decisions. Historical assignments and audit references remain intact.
@@ -160,7 +182,17 @@ operation that:
 - records the bootstrap operation, time, reason, and change reference;
 - is idempotent and cannot silently assign authority to an arbitrary
   first-seen Cognito subject;
-- leaves a durable historical record of the bootstrap assignment.
+- leaves a durable historical record of the bootstrap assignment;
+- assigns the system-administrator role at the highest privilege rank, which
+  cannot be assigned through normal role-assignment operations even by other
+  high-rank actors.
+
+The system-administrator role's highest rank is enforced structurally:
+
+- It can only be assigned through the controlled bootstrap flow
+- Normal role-assignment operations (via `identity-access.role.assign` permission)
+  are rejected for system-administrator regardless of the actor's rank
+- This prevents privilege escalation through the standard delegation path
 
 Until that controlled operation succeeds, no ordinary user has IAM
 administration authority. If a separate bootstrap-state record or deployment
@@ -174,13 +206,14 @@ administrator row is seeded.
 The eventual PostgreSQL schema and migration must enforce, at minimum:
 
 - a stable primary key on every entity and relationship table;
-- `NOT NULL` on all required identifiers, statuses, timestamps, and mandatory
-  foreign-key columns;
+- `NOT NULL` on all required identifiers, statuses, timestamps, privilege rank,
+  and mandatory foreign-key columns;
 - a closed status constraint for user, role, role-permission, and user-role
   lifecycle states;
 - a unique Cognito subject mapping so one subject cannot map to multiple
   internal users;
 - a unique stable role key;
+- a non-negative privilege rank constraint (rank >= 0);
 - at most one active role-permission relationship for a role and permission,
   while allowing historical revoked relationships to remain preserved;
 - explicit foreign keys from assignments to their owned user, role, and
@@ -259,6 +292,11 @@ matching the stable code-level permission identifier. User, role,
 role-permission, and user-role assignment lifecycle states are PostgreSQL enum
 types. All assignment foreign keys use `RESTRICT` for delete and update
 behavior, preserving historical rows.
+
+The Role model includes a privilege rank field (non-negative integer) to
+enforce delegation authority constraints as defined in the authorization
+architecture. This field was added via an approved decision to implement
+OPTION A (explicit role rank/tier) for privilege escalation protection.
 
 The implementation intentionally uses the approved minimal User shape:
 identity mapping, account status, lifecycle timestamps, status-change actor,

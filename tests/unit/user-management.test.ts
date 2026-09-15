@@ -312,9 +312,9 @@ describe('ManageUsers', () => {
             },
         });
 
-        await expect(
-            denied.findById('user-1', actor),
-        ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
+        await expect(denied.findById('user-1', actor)).rejects.toBeInstanceOf(
+            UnauthorizedUserManagementError,
+        );
 
         expect(events[events.length - 1]).toMatchObject({
             eventName: 'authorization_denied',
