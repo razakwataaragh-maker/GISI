@@ -10,6 +10,7 @@ response conventions, validation, security, errors, and versioning.
 - [Correlation, pagination, and filtering](correlation-pagination-filtering.md)
 - [Error taxonomy](error-taxonomy.md)
 - [HTTP status and validation](http-status-and-validation.md)
+- [Identity and access endpoints](identity-access-endpoints.md)
 - [Middleware order](middleware-order.md)
 - [Module API ownership](module-api-ownership.md)
 - [OpenAPI ownership](openapi-ownership.md)
