@@ -213,6 +213,30 @@ credentials, private keys, raw provider errors, unrestricted request bodies,
 or unnecessary personal data. Authorization denial records must not preserve
 hidden resource identifiers or sensitive policy details.
 
+## Audit coverage status
+
+`permission_declared` is not applicable to the current implementation because
+permissions are provided by a static registry rather than declared through a
+runtime IAM operation. `permission_grouped` is also not applicable because
+the current design has no permission-grouping model or grouping operation.
+These event names remain reserved for a future design that introduces those
+capabilities.
+
+## Known Structural Risk
+
+`AuthorizationService` is not currently the enforcement point for
+`authorization_denied` auditing. The reviewed IAM application services emit
+denial audit records at their calling boundary, while the shared
+`AuthorizationService` evaluates policy and returns a decision without
+writing an audit event.
+
+Until a unified, audited authorization contract is deliberately designed,
+future modules that call the shared authorization boundary must independently
+ensure that authorization denials are audited with the required safe fields.
+This responsibility is not currently guaranteed automatically by
+`AuthorizationService`. Revisit this design before the Student Management or
+Finance Management modules are implemented.
+
 ## Non-scope
 
 This task does not define:

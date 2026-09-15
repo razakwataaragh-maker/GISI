@@ -252,6 +252,24 @@ strings, raw provider exceptions, provider response bodies, or stack traces.
 Failed login records may identify an anonymous/unknown actor and safe failure
 category, but must not preserve submitted credentials.
 
+## Audit coverage status
+
+The following Cognito-owned authentication events are deliberate Version 1.0
+non-scope for the GISI API layer because Cognito owns the provider operation
+and the current GISI contracts do not expose provider command adapters:
+
+- `logout`
+- `password_reset_requested`
+- `password_reset_completed`
+- `password_change_completed`
+- `token_refresh_success`
+- `token_refresh_failure`
+
+These events remain required at the overall platform boundary and must be
+emitted when the corresponding provider delegation flows are introduced. GISI
+must not invent local password, recovery, logout, or token-refresh flows to
+produce them prematurely.
+
 ## Non-scope
 
 This task does not define:

@@ -20,6 +20,32 @@ import {
 const actor = { id: 'admin-1', type: 'user' as const };
 const firstTime = new Date('2026-09-13T10:00:00.000Z');
 
+function expectSafeAuditEvent(
+    event: AuditEventInput | undefined,
+    expected: Partial<AuditEventInput>,
+): void {
+    expect(event).toMatchObject({
+        category: 'security',
+        owningModule: 'identity-access',
+        sourceBoundary: 'application',
+        ...expected,
+    });
+    expect(Object.keys(event ?? {})).not.toEqual(
+        expect.arrayContaining([
+            'password',
+            'passwordHash',
+            'token',
+            'accessToken',
+            'refreshToken',
+            'cookie',
+            'secret',
+            'privateKey',
+            'providerResponse',
+            'stack',
+        ]),
+    );
+}
+
 function user(overrides: Partial<ManagedUser> = {}): ManagedUser {
     return {
         id: 'user-1',
@@ -102,13 +128,16 @@ describe('ManageUsers', () => {
         });
 
         expect(created.status).toBe('DEACTIVATED');
-        expect(events[0]).toMatchObject({
+        expectSafeAuditEvent(events[0], {
             eventName: 'user_provisioned',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             targetId: created.id,
+            action: 'provision',
+            outcome: 'success',
             afterState: { status: 'DEACTIVATED' },
         });
-        expect(events[0]).not.toHaveProperty('token');
     });
 
     it('does not provision when authorization denies the operation', async () => {
@@ -138,9 +167,11 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
 
-        expect(events[0]).toMatchObject({
+        expectSafeAuditEvent(events[0], {
             eventName: 'authorization_denied',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'provision',
             outcome: 'failure',
             reason: 'authorization_denied',
@@ -158,9 +189,11 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(DuplicateCognitoSubjectError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'user_provision_failed',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'provision',
             outcome: 'failure',
             reason: 'duplicate_cognito_subject',
@@ -237,9 +270,12 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(InvalidUserStatusTransitionError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'user_transition_failed',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
+            targetId: 'user-1',
             action: 'activate',
             outcome: 'failure',
             reason: 'invalid_status_transition',
@@ -267,9 +303,12 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(ImmutableCognitoSubjectError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'user_update_failed',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
+            targetId: 'user-1',
             action: 'update',
             outcome: 'failure',
             reason: 'immutable_cognito_subject',
@@ -284,9 +323,12 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(InvalidUserUpdateError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'user_update_failed',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
+            targetId: 'user-1',
             action: 'update',
             outcome: 'failure',
             reason: 'invalid_user_update_field',
@@ -316,9 +358,11 @@ describe('ManageUsers', () => {
             denied.findById('user-1', actor),
         ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'authorization_denied',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'read',
             outcome: 'failure',
             reason: 'authorization_denied',
@@ -354,9 +398,11 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'authorization_denied',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'update',
             outcome: 'failure',
             reason: 'authorization_denied',
@@ -391,9 +437,11 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(UnauthorizedUserManagementError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'authorization_denied',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'activate',
             outcome: 'failure',
             reason: 'authorization_denied',
@@ -413,9 +461,11 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(UserNotFoundError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'user_not_found',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'update',
             outcome: 'failure',
             reason: 'user_not_found',
@@ -434,9 +484,11 @@ describe('ManageUsers', () => {
             }),
         ).rejects.toBeInstanceOf(UserNotFoundError);
 
-        expect(events[events.length - 1]).toMatchObject({
+        expectSafeAuditEvent(events[events.length - 1], {
             eventName: 'user_not_found',
             actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'user',
             action: 'activate',
             outcome: 'failure',
             reason: 'user_not_found',

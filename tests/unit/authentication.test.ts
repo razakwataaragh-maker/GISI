@@ -127,6 +127,32 @@ describe('CognitoJwtVerifier', () => {
 });
 
 describe('AuthenticateUser', () => {
+    function expectSafeAuditEvent(
+        event: AuditEventInput | undefined,
+        expected: Partial<AuditEventInput>,
+    ): void {
+        expect(event).toMatchObject({
+            category: 'security',
+            owningModule: 'identity-access',
+            sourceBoundary: 'application',
+            ...expected,
+        });
+        expect(Object.keys(event ?? {})).not.toEqual(
+            expect.arrayContaining([
+                'password',
+                'passwordHash',
+                'token',
+                'accessToken',
+                'refreshToken',
+                'cookie',
+                'secret',
+                'privateKey',
+                'providerResponse',
+                'stack',
+            ]),
+        );
+    }
+
     function auditWriter(events: AuditEventInput[]) {
         return {
             append: async (event: AuditEventInput) => {
@@ -156,16 +182,62 @@ describe('AuthenticateUser', () => {
             auditWriter: auditWriter(events),
         });
 
-        await expect(service.execute({ token: 'opaque' })).resolves.toEqual({
+        await expect(
+            service.execute({
+                token: 'opaque',
+                correlationId: 'auth-unmapped-1',
+            }),
+        ).resolves.toEqual({
             ok: false,
             failure: { code: 'UNAUTHORIZED', reason: 'UNMAPPED_SUBJECT' },
         });
-        expect(events[0]).toMatchObject({
+        expectSafeAuditEvent(events[0], {
             eventName: 'authentication_denied_unmapped_subject',
+            actorType: 'anonymous',
+            targetType: 'authentication',
+            action: 'authenticate',
             outcome: 'failure',
             reason: 'UNMAPPED_SUBJECT',
+            correlationId: 'auth-unmapped-1',
         });
-        expect(events[0]).not.toHaveProperty('token');
+    });
+
+    it('records a complete safe login_success audit event', async () => {
+        const events: AuditEventInput[] = [];
+        const service = new AuthenticateUser({
+            tokenVerifier: {
+                verify: async () => ({
+                    ok: true,
+                    identity: { subject: 'known', tokenUse: 'id' },
+                }),
+            },
+            userRepository: {
+                findByCognitoSubject: async () => ({
+                    id: 'user-1',
+                    cognitoSubject: 'known',
+                    status: 'ACTIVE',
+                }),
+            },
+            auditWriter: auditWriter(events),
+        });
+
+        await expect(
+            service.execute({
+                token: 'opaque-token-that-must-not-be-audited',
+                correlationId: 'auth-success-1',
+            }),
+        ).resolves.toMatchObject({ ok: true });
+
+        expectSafeAuditEvent(events[0], {
+            eventName: 'login_success',
+            actorId: 'user-1',
+            actorType: 'user',
+            targetType: 'user',
+            targetId: 'user-1',
+            action: 'authenticate',
+            outcome: 'success',
+            correlationId: 'auth-success-1',
+        });
     });
 
     it.each([
@@ -187,18 +259,24 @@ describe('AuthenticateUser', () => {
             auditWriter: auditWriter(events),
         });
 
-        await expect(service.execute({ token: 'opaque' })).resolves.toEqual({
+        await expect(
+            service.execute({
+                token: 'opaque',
+                correlationId: 'auth-login-failure-1',
+            }),
+        ).resolves.toEqual({
             ok: false,
             failure: { code, reason },
         });
         expect(events).toHaveLength(1);
-        expect(events[0]).toMatchObject({
+        expectSafeAuditEvent(events[0], {
             eventName: 'login_failure',
             actorType: 'anonymous',
+            targetType: 'authentication',
+            action: 'authenticate',
             outcome: 'failure',
             reason,
         });
-        expect(events[0]).not.toHaveProperty('token');
     });
 
     it('forbids a deactivated mapped user', async () => {
@@ -220,15 +298,24 @@ describe('AuthenticateUser', () => {
             auditWriter: auditWriter(events),
         });
 
-        await expect(service.execute({ token: 'opaque' })).resolves.toEqual({
+        await expect(
+            service.execute({
+                token: 'opaque',
+                correlationId: 'auth-inactive-1',
+            }),
+        ).resolves.toEqual({
             ok: false,
             failure: { code: 'FORBIDDEN', reason: 'INACTIVE_ACCOUNT' },
         });
-        expect(events[0]).toMatchObject({
+        expectSafeAuditEvent(events[0], {
             eventName: 'authentication_denied_inactive_account',
             actorType: 'anonymous',
+            targetType: 'user',
             targetId: 'user-1',
+            action: 'authenticate',
+            outcome: 'failure',
             reason: 'INACTIVE_ACCOUNT',
+            correlationId: 'auth-inactive-1',
         });
     });
 

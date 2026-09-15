@@ -20,6 +20,21 @@ const firstTime = new Date('2026-09-14T10:00:00.000Z');
 const actor = { id: 'admin-1', type: 'user' as const };
 const systemActor = { id: 'system', type: 'system' as const };
 
+function expectSafeAuditEvent(
+    event: AuditEventInput | undefined,
+    expected: Partial<AuditEventInput>,
+): void {
+    expect(event).toMatchObject({
+        category: 'security',
+        owningModule: 'identity-access',
+        sourceBoundary: 'application',
+        ...expected,
+    });
+    expect(JSON.stringify(event)).not.toMatch(
+        /password|token|cookie|secret|privateKey|stack|providerResponse/i,
+    );
+}
+
 function role(overrides: Partial<Role> = {}): Role {
     return {
         id: 'role-1',
@@ -270,6 +285,228 @@ function harness(
 }
 
 describe('ManageRolesAndPermissions - Rank-based Delegation Authority', () => {
+    it('audits every implemented role and permission event with safe fields', async () => {
+        const actorAssignment = userRoleAssignment({
+            userId: actor.id,
+            roleId: 'role-authority',
+            id: 'ura-actor',
+        });
+        const authorityRole = role({
+            id: 'role-authority',
+            key: 'authority',
+            rank: 10,
+        });
+        const targetRole = role({
+            id: 'role-target',
+            key: 'target',
+            rank: 5,
+        });
+        const lifecycleRole = role({
+            id: 'role-1',
+            key: 'lifecycle',
+            rank: 0,
+        });
+        const { service, events } = harness(
+            [authorityRole, targetRole, lifecycleRole],
+            [actorAssignment],
+        );
+        const correlationId = 'iam-audit-coverage-1';
+
+        await service.createRole({
+            key: 'created-role',
+            name: 'Created Role',
+            actor,
+            reason: 'create test role',
+            correlationId,
+        });
+        await service.modifyRole({
+            id: 'role-1',
+            name: 'Modified Role',
+            actor,
+            reason: 'modify test role',
+            correlationId,
+        });
+        await service.deactivateRole({
+            id: 'role-1',
+            actor,
+            reason: 'deactivate test role',
+            correlationId,
+        });
+        await service.grantPermission({
+            roleId: 'role-target',
+            permissionId: 'identity-access.user.read',
+            actor,
+            reason: 'grant test permission',
+            correlationId,
+        });
+        await service.revokePermission({
+            roleId: 'role-target',
+            permissionId: 'identity-access.user.read',
+            actor,
+            reason: 'revoke test permission',
+            correlationId,
+        });
+        await service.assignRole({
+            userId: 'user-2',
+            roleId: 'role-target',
+            actor,
+            reason: 'assign test role',
+            correlationId,
+        });
+        await service.revokeRole({
+            userId: 'user-2',
+            roleId: 'role-target',
+            actor,
+            reason: 'revoke test role',
+            correlationId,
+        });
+
+        const expectedEvents = [
+            ['role_created', 'role', 'create', 'success'],
+            ['role_modified', 'role', 'modify', 'success'],
+            ['role_deactivated', 'role', 'deactivate', 'success'],
+            ['permission_granted', 'permission', 'grant', 'success'],
+            ['permission_revoked', 'permission', 'revoke', 'success'],
+            ['role_assigned', 'role', 'assign', 'success'],
+            ['role_revoked', 'role', 'revoke', 'success'],
+        ] as const;
+
+        for (const [index, [eventName, targetType, action, outcome]] of expectedEvents.entries()) {
+            expectSafeAuditEvent(events[index], {
+                eventName,
+                actorId: actor.id,
+                actorType: actor.type,
+                targetType,
+                action,
+                outcome,
+                correlationId,
+            });
+        }
+    });
+
+    it('audits authorization_denied with safe target and correlation fields', async () => {
+        const { repository } = harness();
+        const events: AuditEventInput[] = [];
+        const service = new ManageRolesAndPermissions({
+            repository,
+            auditWriter: {
+                append: async (event): Promise<AuditEvent> => {
+                    events.push(event);
+                    return {
+                        id: `audit-${events.length}`,
+                        ...event,
+                        occurredAt: event.occurredAt ?? firstTime,
+                        recordedAt: firstTime,
+                    };
+                },
+            },
+            authorization: { authorize: async () => false },
+            clock: () => firstTime,
+        });
+
+        await expect(
+            service.createRole({
+                key: 'denied-role',
+                name: 'Denied Role',
+                actor,
+                reason: 'denied create',
+                correlationId: 'iam-audit-denied-1',
+            }),
+        ).rejects.toThrow();
+
+        expectSafeAuditEvent(events[0], {
+            eventName: 'authorization_denied',
+            actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'role',
+            action: 'role.create',
+            outcome: 'failure',
+            reason: 'authorization_denied',
+        });
+    });
+
+    it('audits privilege escalation and bootstrap establishment safely', async () => {
+        const lowRankRole = role({
+            id: 'role-low',
+            key: 'low-rank',
+            rank: 5,
+        });
+        const highRankRole = role({
+            id: 'role-high',
+            key: 'high-rank',
+            rank: 10,
+        });
+        const { service, events } = harness(
+            [lowRankRole, highRankRole],
+            [userRoleAssignment({
+                userId: actor.id,
+                roleId: 'role-low',
+                id: 'ura-actor',
+            })],
+        );
+
+        await expect(
+            service.assignRole({
+                userId: 'user-2',
+                roleId: 'role-high',
+                actor,
+                reason: 'blocked escalation',
+                correlationId: 'iam-audit-escalation-1',
+            }),
+        ).rejects.toThrow();
+        expectSafeAuditEvent(events[events.length - 1], {
+            eventName: 'privilege_escalation_blocked',
+            actorId: actor.id,
+            actorType: actor.type,
+            targetType: 'role',
+            targetId: 'role-high',
+            action: 'role.assign',
+            outcome: 'failure',
+            reason: 'target_rank_not_strictly_less_than_actor_rank',
+        });
+
+        const bootstrapEvents: AuditEventInput[] = [];
+        const bootstrapRole = role({
+            id: 'role-sysadmin',
+            key: 'system-administrator',
+            rank: 9999,
+        });
+        const bootstrap = harness([bootstrapRole]);
+        const bootstrapService = new ManageRolesAndPermissions({
+            repository: bootstrap.repository,
+            auditWriter: {
+                append: async (event): Promise<AuditEvent> => {
+                    bootstrapEvents.push(event);
+                    return {
+                        id: `audit-${bootstrapEvents.length}`,
+                        ...event,
+                        occurredAt: event.occurredAt ?? firstTime,
+                        recordedAt: firstTime,
+                    };
+                },
+            },
+            authorization: { authorize: async () => true },
+            clock: () => firstTime,
+        });
+
+        await bootstrapService.bootstrapAdministrator({
+            userId: 'user-1',
+            actor: systemActor,
+            reason: 'establish bootstrap administrator',
+            correlationId: 'iam-audit-bootstrap-1',
+        });
+        expectSafeAuditEvent(bootstrapEvents[bootstrapEvents.length - 1], {
+            eventName: 'bootstrap_administrator_established',
+            actorId: systemActor.id,
+            actorType: systemActor.type,
+            targetType: 'administrator',
+            targetId: 'user-1',
+            action: 'bootstrap',
+            outcome: 'success',
+            correlationId: 'iam-audit-bootstrap-1',
+        });
+    });
+
     describe('Normal assignment within authority', () => {
         it('allows actor with higher rank to assign role with lower rank', async () => {
             const highRankRole = role({
