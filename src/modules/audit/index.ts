@@ -4,9 +4,7 @@ export type {
     AuditJsonValue,
     AuditWriter,
 } from './domain/audit-writer.js';
-export {
-    AuditWriterError,
-} from './domain/audit-writer.js';
+export { AuditWriterError } from './domain/audit-writer.js';
 export {
     AuditEventValidationError,
     validateAuditEvent,

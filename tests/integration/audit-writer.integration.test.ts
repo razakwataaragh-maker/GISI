@@ -78,7 +78,9 @@ describe('PrismaAuditWriter Integration', () => {
                 afterState: { secret: 'must-not-be-stored' },
             };
 
-            await expect(writer.append(event)).rejects.toThrow('prohibited field');
+            await expect(writer.append(event)).rejects.toThrow(
+                'prohibited field',
+            );
 
             await prisma.$disconnect();
         });

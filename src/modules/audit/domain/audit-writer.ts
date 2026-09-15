@@ -36,7 +36,10 @@ export interface AuditWriter {
 }
 
 export class AuditWriterError extends Error {
-    constructor(message: string, public readonly cause?: unknown) {
+    constructor(
+        message: string,
+        public readonly cause?: unknown,
+    ) {
         super(message);
         this.name = 'AuditWriterError';
     }

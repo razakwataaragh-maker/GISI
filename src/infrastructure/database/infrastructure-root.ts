@@ -22,6 +22,8 @@ export function createInfrastructureRoot(
     };
 }
 
-export async function shutdownInfrastructureRoot(root: InfrastructureRoot): Promise<void> {
+export async function shutdownInfrastructureRoot(
+    root: InfrastructureRoot,
+): Promise<void> {
     await root.prisma.$disconnect();
 }

@@ -371,7 +371,10 @@ describe('ManageRolesAndPermissions - Rank-based Delegation Authority', () => {
             ['role_revoked', 'role', 'revoke', 'success'],
         ] as const;
 
-        for (const [index, [eventName, targetType, action, outcome]] of expectedEvents.entries()) {
+        for (const [
+            index,
+            [eventName, targetType, action, outcome],
+        ] of expectedEvents.entries()) {
             expectSafeAuditEvent(events[index], {
                 eventName,
                 actorId: actor.id,
@@ -438,11 +441,13 @@ describe('ManageRolesAndPermissions - Rank-based Delegation Authority', () => {
         });
         const { service, events } = harness(
             [lowRankRole, highRankRole],
-            [userRoleAssignment({
-                userId: actor.id,
-                roleId: 'role-low',
-                id: 'ura-actor',
-            })],
+            [
+                userRoleAssignment({
+                    userId: actor.id,
+                    roleId: 'role-low',
+                    id: 'ura-actor',
+                }),
+            ],
         );
 
         await expect(

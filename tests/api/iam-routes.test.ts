@@ -26,9 +26,7 @@ const user = {
     statusChangeReason: 'provisioned',
 };
 
-function dependencies(
-    authorized = true,
-): IamRoutesDependencies {
+function dependencies(authorized = true): IamRoutesDependencies {
     return {
         authenticateUser: {
             execute: vi.fn().mockResolvedValue({
@@ -62,7 +60,9 @@ function dependencies(
     };
 }
 
-async function application(routeDependencies: IamRoutesDependencies): Promise<FastifyInstance> {
+async function application(
+    routeDependencies: IamRoutesDependencies,
+): Promise<FastifyInstance> {
     const app = Fastify();
     const logger = createLogger({
         level: 'error',
@@ -139,12 +139,10 @@ describe('IAM API routes', () => {
         expect(response.headers['x-correlation-id']).toBe('iam-request-1');
         expect(
             vi.mocked(routeDependencies.authorization.authorize),
-        ).toHaveBeenCalledWith(
-            {
-                actor: { id: 'user-1', type: 'user' },
-                action: 'user.read',
-            },
-        );
+        ).toHaveBeenCalledWith({
+            actor: { id: 'user-1', type: 'user' },
+            action: 'user.read',
+        });
     });
 
     it('returns UNAUTHORIZED when the bearer token is missing', async () => {
@@ -252,10 +250,10 @@ describe('IAM API routes', () => {
         expect(response.statusCode).toBe(200);
         expect(routeDependencies.manageUsers.update).toHaveBeenCalledWith(
             expect.objectContaining({
-            id: 'user-1',
-            actor: { id: 'user-1', type: 'user' },
-            fields: { statusChangeReason: 'Corrected profile data' },
-            reason: 'Corrected profile data',
+                id: 'user-1',
+                actor: { id: 'user-1', type: 'user' },
+                fields: { statusChangeReason: 'Corrected profile data' },
+                reason: 'Corrected profile data',
             }),
         );
     });
@@ -274,10 +272,10 @@ describe('IAM API routes', () => {
         expect(response.statusCode).toBe(200);
         expect(routeDependencies.manageUsers.transition).toHaveBeenCalledWith(
             expect.objectContaining({
-            id: 'user-1',
-            transition: 'activate',
-            reason: 'Approved for access',
-            actor: { id: 'user-1', type: 'user' },
+                id: 'user-1',
+                transition: 'activate',
+                reason: 'Approved for access',
+                actor: { id: 'user-1', type: 'user' },
             }),
         );
     });
@@ -377,7 +375,11 @@ describe('IAM API routes', () => {
             name: 'POST /roles',
             method: 'POST' as const,
             url: '/roles',
-            payload: { key: 'academic-officer', name: 'Academic Officer', reason: 'Create role' },
+            payload: {
+                key: 'academic-officer',
+                name: 'Academic Officer',
+                reason: 'Create role',
+            },
             operation: 'createRole' as const,
         },
         {
@@ -406,7 +408,9 @@ describe('IAM API routes', () => {
         });
 
         expect(response.statusCode).toBe(method === 'POST' ? 201 : 200);
-        expect(routeDependencies.manageRolesAndPermissions[operation]).toHaveBeenCalled();
+        expect(
+            routeDependencies.manageRolesAndPermissions[operation],
+        ).toHaveBeenCalled();
     });
 
     it.each([
@@ -414,7 +418,11 @@ describe('IAM API routes', () => {
             name: 'POST /roles',
             method: 'POST' as const,
             url: '/roles',
-            payload: { key: 'academic-officer', name: 'Academic Officer', reason: 'Create role' },
+            payload: {
+                key: 'academic-officer',
+                name: 'Academic Officer',
+                reason: 'Create role',
+            },
         },
         {
             name: 'PATCH /roles/:id',
@@ -484,7 +492,9 @@ describe('IAM API routes', () => {
         });
 
         expect(response.statusCode).toBe(204);
-        expect(routeDependencies.manageRolesAndPermissions[operation]).toHaveBeenCalled();
+        expect(
+            routeDependencies.manageRolesAndPermissions[operation],
+        ).toHaveBeenCalled();
     });
 
     it.each([

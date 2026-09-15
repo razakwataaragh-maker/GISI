@@ -11,7 +11,10 @@ import {
 } from '../application/validate-audit-event.js';
 
 export class PrismaAuditWriterError extends Error {
-    constructor(message: string, public readonly cause?: unknown) {
+    constructor(
+        message: string,
+        public readonly cause?: unknown,
+    ) {
         super(message);
         this.name = 'AuditWriterError';
     }

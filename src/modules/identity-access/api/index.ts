@@ -1,4 +1,1 @@
-export {
-    iamRoutesPlugin,
-    type IamRoutesDependencies,
-} from './iam-routes.js';
+export { iamRoutesPlugin, type IamRoutesDependencies } from './iam-routes.js';

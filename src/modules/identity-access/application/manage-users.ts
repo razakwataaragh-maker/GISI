@@ -220,7 +220,9 @@ export class ManageUsers {
             }
         }
 
-        const current = await this.dependencies.userRepository.findById(input.id);
+        const current = await this.dependencies.userRepository.findById(
+            input.id,
+        );
         if (current === null) {
             await this.writeAudit({
                 eventName: 'user_not_found',
@@ -280,7 +282,9 @@ export class ManageUsers {
             throw error;
         }
 
-        const current = await this.dependencies.userRepository.findById(input.id);
+        const current = await this.dependencies.userRepository.findById(
+            input.id,
+        );
         if (current === null) {
             await this.writeAudit({
                 eventName: 'user_not_found',

@@ -233,7 +233,9 @@ export const iamRoutesPlugin = (
                         type: 'object',
                         required: ['accessToken'],
                         additionalProperties: false,
-                        properties: { accessToken: { type: 'string', minLength: 1 } },
+                        properties: {
+                            accessToken: { type: 'string', minLength: 1 },
+                        },
                     },
                 },
             },
@@ -245,7 +247,9 @@ export const iamRoutesPlugin = (
                 if (!result.ok) {
                     throw new ApiError(result.failure.code);
                 }
-                return { principal: principalResponse(result.context.principal) };
+                return {
+                    principal: principalResponse(result.context.principal),
+                };
             },
         );
 
@@ -286,7 +290,11 @@ export const iamRoutesPlugin = (
             },
             async (request) => {
                 const protectedRequestValue = protectedRequest(request);
-                await authorize(protectedRequestValue, dependencies, 'user.read');
+                await authorize(
+                    protectedRequestValue,
+                    dependencies,
+                    'user.read',
+                );
                 const actor = actorFrom(
                     protectedRequestValue.authenticationContext,
                 );
@@ -348,7 +356,10 @@ export const iamRoutesPlugin = (
                         required: ['statusChangeReason'],
                         additionalProperties: false,
                         properties: {
-                            statusChangeReason: { type: 'string', minLength: 1 },
+                            statusChangeReason: {
+                                type: 'string',
+                                minLength: 1,
+                            },
                         },
                     },
                 },
@@ -405,7 +416,8 @@ export const iamRoutesPlugin = (
             },
             async (request) => {
                 const protectedRequestValue = protectedRequest(request);
-                const action = `user.${request.body.transition}` as UserManagementAction;
+                const action =
+                    `user.${request.body.transition}` as UserManagementAction;
                 await authorize(
                     protectedRequestValue,
                     dependencies,
@@ -522,7 +534,9 @@ export const iamRoutesPlugin = (
                         type: 'object',
                         required: ['reason'],
                         additionalProperties: false,
-                        properties: { reason: { type: 'string', minLength: 1 } },
+                        properties: {
+                            reason: { type: 'string', minLength: 1 },
+                        },
                     },
                 },
             },
@@ -609,7 +623,9 @@ export const iamRoutesPlugin = (
                         type: 'object',
                         required: ['reason'],
                         additionalProperties: false,
-                        properties: { reason: { type: 'string', minLength: 1 } },
+                        properties: {
+                            reason: { type: 'string', minLength: 1 },
+                        },
                     },
                 },
             },
@@ -654,7 +670,9 @@ export const iamRoutesPlugin = (
                         type: 'object',
                         required: ['reason'],
                         additionalProperties: false,
-                        properties: { reason: { type: 'string', minLength: 1 } },
+                        properties: {
+                            reason: { type: 'string', minLength: 1 },
+                        },
                     },
                 },
             },
@@ -698,7 +716,9 @@ export const iamRoutesPlugin = (
                         type: 'object',
                         required: ['reason'],
                         additionalProperties: false,
-                        properties: { reason: { type: 'string', minLength: 1 } },
+                        properties: {
+                            reason: { type: 'string', minLength: 1 },
+                        },
                     },
                 },
             },

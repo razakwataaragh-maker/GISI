@@ -251,17 +251,20 @@ not define IAM-specific event names.
 ### Implementation components
 
 **Domain contract** (`src/modules/audit/domain/audit-writer.ts`):
+
 - `AuditWriter` interface with `append` method only
 - `AuditEventInput` and `AuditEvent` types
 - `AuditWriterError` for database persistence failures
 - `AuditJsonValue` type for safe state serialization
 
 **Application layer** (`src/modules/audit/application/validate-audit-event.ts`):
+
 - `validateAuditEvent` function with recursive field validation
 - Prohibited field pattern detection (passwords, tokens, secrets, etc.)
 - `AuditEventValidationError` for validation failures
 
 **Infrastructure layer** (`src/modules/audit/infrastructure/prisma-audit-writer.ts`):
+
 - `PrismaAuditWriter` implementation
 - Transactional support via `PrismaAuditWriter.transactional()`
 - Error handling and mapping to domain errors
