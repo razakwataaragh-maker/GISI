@@ -26,6 +26,28 @@ insert them into the new session's own tables using explicit `BEGIN`/`COMMIT`
 transactions. The `id`, `status`, and timestamps were preserved exactly; no
 statuses were reset.
 
+Multiple `session.db` files can exist with identical row and dependency counts
+but different, stale task statuses. Matching counts do **not** mean matching
+data. Before trusting recovered backlog data, cross-check the statuses of the
+most recently active tasks — currently
+`implement-authentication`, `implement-user-management`,
+`implement-roles-and-permissions`, and `implement-audit-writer` — against this
+document's Completed tasks list, which is the durable ground truth. If a
+`session.db` disagrees with this document, this document wins and the
+`session.db` must be corrected to match, not the other way around. During
+recovery, check file modification times first with
+`ls -la --time-style=full-iso /home/wataara/.copilot/session-state/*/session.db`,
+but always verify actual task statuses afterward; the newest file is not
+guaranteed to be the most complete one.
+
+Background or abandoned coding-agent sessions have produced significant
+unreviewed, uncommitted work twice: exploratory IAM schema work, and a full
+Student module plus server bootstrap layer. The latter was preserved in commits
+`e4ad138` and `52a04e6` on the
+`exploratory/unreviewed-student-and-bootstrap-work` branch. At the start of
+every new session, run `git status` first to check for untracked or uncommitted
+files that were never reviewed.
+
 `PROJECT_STATUS.md` itself, committed to Git, is the true durable source of
 truth for which tasks are complete. The session database is a convenient
 working tool within one session, not the permanent record. If the two ever
@@ -33,7 +55,7 @@ disagree, `PROJECT_STATUS.md` and Git history govern.
 
 ## Backlog summary
 
-The current backlog contains **39 total tasks: 31 done and 8 pending**.
+The current backlog contains **39 total tasks: 34 done and 5 pending**.
 
 ## Phase 0 status
 
@@ -41,39 +63,33 @@ Project Foundation (Phase 0) is fully complete and approved.
 
 ## Phase 1 completed tasks
 
-The following Phase 1 tasks have been completed, in order:
+The following **8 of 13** Phase 1 tasks have been completed and independently
+verified, in order:
 
-1. `define-iam-architecture`
-2. `define-authentication-architecture`
-3. `define-authorization-architecture`
-4. `define-iam-data-model`
-5. `establish-iam-persistence`
-6. `implement-audit-writer`
+1. `define-iam-architecture` — `e7b8fc6`
+2. `define-authentication-architecture` — `2e8c99c`
+3. `define-authorization-architecture` — `4ea6458`
+4. `define-iam-data-model` — `9b286ca`
+5. `establish-iam-persistence` — `12ef7cd`
+6. `implement-authentication` — `e64a686`
+7. `implement-user-management` — `07cf480`
+8. `implement-roles-and-permissions` — `0e25bd4`
 
-`implement-audit-writer` was implemented and committed, but has **not** received
-final independent review/sign-off from the reviewing AI. The reviewer was
-reading the raw contents of
-`src/modules/audit/domain/audit-writer.ts`,
-`src/modules/audit/application/validate-audit-event.ts`,
-`src/modules/audit/infrastructure/prisma-audit-writer.ts`,
-`tests/unit/audit-writer.test.ts`, and
-`prisma/migrations/20260913190522_preserve_iam_history_and_audit/migration.sql`
-when the session ended. The next reviewing AI must read these files directly and
-complete that review before treating this task as fully verified, even though it
-is marked `done` in the `todos` table.
+The separately tracked foundation task `implement-audit-writer` is also
+complete in commit `10f8f42`. The latest corrective commits associated with
+these completed tasks include `3aff673`, `12d927f`, `b2658ad`, and `91bab58`;
+the task status remains governed by the completed-task list above and the
+verified implementation history.
 
 ## Remaining Phase 1 tasks in dependency order
 
-The eight pending Phase 1 tasks are:
+The five remaining pending Phase 1 tasks are:
 
-1. `implement-authentication`
-2. `implement-user-management`
-3. `implement-roles-and-permissions`
-4. `harden-iam-security-controls`
-5. `implement-iam-api-endpoints`
-6. `implement-iam-audit-logging`
-7. `add-iam-tests`
-8. `review-and-approve-iam`
+1. `implement-iam-api-endpoints`
+2. `implement-iam-audit-logging`
+3. `harden-iam-security-controls`
+4. `add-iam-tests`
+5. `review-and-approve-iam`
 
 ## Known incident
 
