@@ -13,6 +13,14 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  GRADUATED
+  WITHDRAWN
+}
+
 enum RoleStatus {
   ACTIVE
   INACTIVE
@@ -45,6 +53,32 @@ model User {
 
   @@index([status])
   @@map("users")
+}
+
+model Student {
+  id                 String       @id @default(uuid()) @db.Uuid
+  studentNumber      String       @unique @map("student_number")
+  firstName          String       @map("first_name")
+  lastName           String       @map("last_name")
+  email              String
+  phone              String?
+  nationalId         String?      @map("national_id")
+  addressLine1       String?      @map("address_line_1")
+  addressLine2       String?      @map("address_line_2")
+  city               String?
+  country            String?
+  emergencyContactName String?     @map("emergency_contact_name")
+  emergencyContactPhone String?   @map("emergency_contact_phone")
+  status             StudentStatus
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  statusChangedAt    DateTime     @map("status_changed_at")
+  statusChangedBy    String       @map("status_changed_by")
+  statusHistory      Json         @map("status_history")
+
+  @@index([status])
+  @@index([email])
+  @@map("students")
 }
 
 model Role {

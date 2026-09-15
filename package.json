@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "start": "node dist/src/server.js",
     "test": "npm run test:all",
     "test:all": "vitest run",
     "test:unit": "vitest run tests/unit",
