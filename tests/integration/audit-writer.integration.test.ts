@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 import { PrismaAuditWriter } from '../../src/modules/audit/infrastructure/prisma-audit-writer.js';
 import type { AuditEventInput } from '../../src/modules/audit/domain/audit-writer.js';
 
@@ -86,7 +87,7 @@ describe('PrismaAuditWriter Integration', () => {
             const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
             const writer = new PrismaAuditWriter(prisma);
 
-            const correlationId = 'test-correlation-12345';
+            const correlationId = `test-correlation-${randomUUID()}`;
             const event: AuditEventInput = {
                 eventName: 'correlation_test',
                 category: 'security',
