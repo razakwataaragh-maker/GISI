@@ -7,7 +7,7 @@ CREATE TABLE "students" (
     "student_number" TEXT NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
-    "date_of_birth" TIMESTAMP(3),
+    "date_of_birth" TIMESTAMPTZ(3),
     "gender" TEXT,
     "email" TEXT,
     "phone" TEXT,

@@ -178,7 +178,7 @@ model Student {
   studentNumber     String     @unique @map("student_number")
   firstName         String     @map("first_name")
   lastName          String     @map("last_name")
-  dateOfBirth       DateTime?  @map("date_of_birth")
+  dateOfBirth       DateTime? @map("date_of_birth") @db.Timestamptz
   gender            String?
   email             String?
   phone             String?
@@ -259,7 +259,7 @@ model StudentDocument {
   mimeType          String     @map("mime_type")
   uploadedAt        DateTime   @map("uploaded_at")
   uploadedBy        String     @map("uploaded_by")
-  uploadReason      String?    @map("upload_reason")
+  uploadReason      String?    @map("upload_reason") @db.Text
   changeReference   String?    @map("change_reference")
   createdAt         DateTime   @default(now()) @map("created_at")
 

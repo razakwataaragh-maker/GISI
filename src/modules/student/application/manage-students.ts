@@ -28,7 +28,7 @@ export class ManageStudents {
         try {
             const student = await this.studentRepository.createStudent(input);
 
-            await this.auditWriter.write({
+            await this.auditWriter.append({
                 eventName: 'student.created',
                 category: 'student',
                 actorId: input.createdBy,
@@ -52,7 +52,7 @@ export class ManageStudents {
             return student;
         } catch (error) {
             if (error instanceof Error) {
-                await this.auditWriter.write({
+                await this.auditWriter.append({
                     eventName: 'student.creation_failed',
                     category: 'student',
                     actorId: input.createdBy,
@@ -95,7 +95,7 @@ export class ManageStudents {
 
             const student = await this.studentRepository.updateStudent(id, input);
 
-            await this.auditWriter.write({
+            await this.auditWriter.append({
                 eventName: 'student.updated',
                 category: 'student',
                 actorId: input.updatedBy,
@@ -110,19 +110,19 @@ export class ManageStudents {
                 beforeState: {
                     firstName: existing.firstName,
                     lastName: existing.lastName,
-                    email: existing.email,
+                    ...(existing.email !== undefined && { email: existing.email }),
                 },
                 afterState: {
                     firstName: student.firstName,
                     lastName: student.lastName,
-                    email: student.email,
+                    ...(student.email !== undefined && { email: student.email }),
                 },
             });
 
             return student;
         } catch (error) {
             if (error instanceof Error) {
-                await this.auditWriter.write({
+                await this.auditWriter.append({
                     eventName: 'student.update_failed',
                     category: 'student',
                     actorId: input.updatedBy,
@@ -149,7 +149,7 @@ export class ManageStudents {
 
             const student = await this.studentRepository.updateStudentStatus(id, input);
 
-            await this.auditWriter.write({
+            await this.auditWriter.append({
                 eventName: 'student.status_changed',
                 category: 'student',
                 actorId: input.changedBy,
@@ -168,7 +168,7 @@ export class ManageStudents {
             return student;
         } catch (error) {
             if (error instanceof InvalidStudentStatusTransitionError) {
-                await this.auditWriter.write({
+                await this.auditWriter.append({
                     eventName: 'student.status_change_invalid',
                     category: 'student',
                     actorId: input.changedBy,
@@ -194,7 +194,7 @@ export class ManageStudents {
         try {
             const document = await this.studentRepository.createStudentDocument(studentId, input);
 
-            await this.auditWriter.write({
+            await this.auditWriter.append({
                 eventName: 'student.document_uploaded',
                 category: 'student',
                 actorId: input.uploadedBy,
@@ -215,7 +215,7 @@ export class ManageStudents {
             return document;
         } catch (error) {
             if (error instanceof Error) {
-                await this.auditWriter.write({
+                await this.auditWriter.append({
                     eventName: 'student.document_upload_failed',
                     category: 'student',
                     actorId: input.uploadedBy,

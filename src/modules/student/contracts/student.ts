@@ -9,21 +9,21 @@ export interface Student {
     studentNumber: string;
     firstName: string;
     lastName: string;
-    dateOfBirth?: Date;
-    gender?: string;
-    email?: string;
-    phone?: string;
-    nationalId?: string;
-    passportNumber?: string;
-    addressLine1?: string;
-    addressLine2?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
-    emergencyContactName?: string;
-    emergencyContactPhone?: string;
-    emergencyContactRelationship?: string;
+    dateOfBirth: Date | null;
+    gender: string | null;
+    email: string | null;
+    phone: string | null;
+    nationalId: string | null;
+    passportNumber: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    state: string | null;
+    postalCode: string | null;
+    country: string | null;
+    emergencyContactName: string | null;
+    emergencyContactPhone: string | null;
+    emergencyContactRelationship: string | null;
     status: StudentStatus;
     createdAt: Date;
     updatedAt: Date;
@@ -91,7 +91,7 @@ export interface StudentStatusHistory {
     changedAt: Date;
     changedBy: string;
     changeReason: string;
-    changeReference?: string;
+    changeReference: string | null;
     createdAt: Date;
 }
 
@@ -118,8 +118,8 @@ export interface StudentDocument {
     mimeType: string;
     uploadedAt: Date;
     uploadedBy: string;
-    uploadReason?: string;
-    changeReference?: string;
+    uploadReason: string;
+    changeReference: string | null;
     createdAt: Date;
 }
 
@@ -130,7 +130,7 @@ export interface CreateStudentDocumentInput {
     fileSize: number;
     mimeType: string;
     uploadedBy: string;
-    uploadReason?: string;
+    uploadReason?: string | null;
 }
 
 export interface StudentSearchParams {
