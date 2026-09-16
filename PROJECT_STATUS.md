@@ -1,7 +1,7 @@
 # GISI Project Status
 
-**Snapshot date:** 2026-09-16  
-**Current phase:** Phase 1, Identity & Access Management — complete and approved
+**Snapshot date:** 2026-09-16
+**Current phase:** Phase 2, Student Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -55,7 +55,7 @@ disagree, `PROJECT_STATUS.md` and Git history govern.
 
 ## Backlog summary
 
-The current backlog contains **39 total tasks: 34 done and 5 pending**.
+The current backlog contains **48 total tasks: 43 done and 5 pending**.
 
 ## Phase 0 status
 
@@ -88,6 +88,24 @@ verified implementation history.
 ## Remaining Phase 1 tasks in dependency order
 
 None - Phase 1 is complete and approved.
+
+## Phase 2 completed tasks
+
+The following 9 of 9 Phase 2 tasks have been completed and independently verified, in order:
+
+1. `define-student-architecture` — `4c1e6bd` (student module structure, boundaries, dependencies)
+2. `define-student-data-model` — `fec9860` (Prisma schema for students, history, documents)
+3. `establish-student-persistence` — `fec9860` (StudentRepository with CRUD operations)
+4. `implement-student-domain` — `fec9860` (status transitions, domain errors, business rules)
+5. `implement-student-application` — `fec9860` (ManageStudents service with audit logging)
+6. `implement-student-api` — `fec9860` (6 REST endpoints with /api/v1/students versioning)
+7. `implement-student-audit-logging` — `fec9860` (comprehensive audit logging across operations)
+8. `add-student-tests` — `40ae8a5` (27 domain tests for status transitions and errors)
+9. `review-and-approve-student` — `6c9ffdd` (TypeScript fixes, final review, approval)
+
+## Remaining Phase 2 tasks in dependency order
+
+None - Phase 2 is complete and approved.
 
 ## Known incident
 
