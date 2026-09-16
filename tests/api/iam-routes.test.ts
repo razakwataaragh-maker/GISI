@@ -84,12 +84,12 @@ afterEach(async () => {
 });
 
 describe('IAM API routes', () => {
-    it('returns the authenticated principal from POST /auth/login', async () => {
+    it('returns the authenticated principal from POST /api/v1/auth/login', async () => {
         app = await application(dependencies());
 
         const response = await app.inject({
             method: 'POST',
-            url: '/auth/login',
+            url: '/api/v1/auth/login',
             payload: { accessToken: 'cognito-id-token' },
         });
 
@@ -97,7 +97,7 @@ describe('IAM API routes', () => {
         expect(response.json()).toEqual({ principal });
     });
 
-    it('returns UNAUTHORIZED when POST /auth/login authentication fails', async () => {
+    it('returns UNAUTHORIZED when POST /api/v1/auth/login authentication fails', async () => {
         const routeDependencies = dependencies();
         routeDependencies.authenticateUser.execute = vi.fn().mockResolvedValue({
             ok: false,
@@ -107,7 +107,7 @@ describe('IAM API routes', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: '/auth/login',
+            url: '/api/v1/auth/login',
             payload: { accessToken: 'expired-token' },
         });
 
@@ -115,13 +115,13 @@ describe('IAM API routes', () => {
         expect(response.json()).toMatchObject({ code: 'UNAUTHORIZED' });
     });
 
-    it('returns the authenticated user from GET /me', async () => {
+    it('returns the authenticated user from GET /api/v1/me', async () => {
         const routeDependencies = dependencies();
         app = await application(routeDependencies);
 
         const response = await app.inject({
             method: 'GET',
-            url: '/me',
+            url: '/api/v1/me',
             headers: {
                 authorization: 'Bearer verified-token',
                 'x-correlation-id': 'iam-request-1',
@@ -150,7 +150,7 @@ describe('IAM API routes', () => {
 
         const response = await app.inject({
             method: 'GET',
-            url: '/me',
+            url: '/api/v1/me',
             headers: { 'x-correlation-id': 'iam-request-2' },
         });
 
@@ -173,7 +173,7 @@ describe('IAM API routes', () => {
 
         const response = await app.inject({
             method: 'GET',
-            url: '/me',
+            url: '/api/v1/me',
             headers: { authorization: 'Bearer expired-token' },
         });
 
@@ -191,7 +191,7 @@ describe('IAM API routes', () => {
 
         const response = await app.inject({
             method: 'GET',
-            url: '/me',
+            url: '/api/v1/me',
             headers: { authorization: 'Bearer verified-token' },
         });
 
@@ -209,7 +209,7 @@ describe('IAM API routes', () => {
 
         const response = await app.inject({
             method: 'POST',
-            url: '/users',
+            url: '/api/v1/users',
             headers: { authorization: 'Bearer verified-token' },
             payload: { reason: '' },
         });
@@ -236,13 +236,13 @@ describe('IAM API routes', () => {
         );
     });
 
-    it('updates a user with PATCH /users/:id', async () => {
+    it('updates a user with PATCH /api/v1/users/:id', async () => {
         const routeDependencies = dependencies();
         app = await application(routeDependencies);
 
         const response = await app.inject({
             method: 'PATCH',
-            url: '/users/user-1',
+            url: '/api/v1/users/user-1',
             headers: { authorization: 'Bearer test-token' },
             payload: { statusChangeReason: 'Corrected profile data' },
         });
@@ -258,13 +258,13 @@ describe('IAM API routes', () => {
         );
     });
 
-    it('transitions a user with PATCH /users/:id/status', async () => {
+    it('transitions a user with PATCH /api/v1/users/:id/status', async () => {
         const routeDependencies = dependencies();
         app = await application(routeDependencies);
 
         const response = await app.inject({
             method: 'PATCH',
-            url: '/users/user-1/status',
+            url: '/api/v1/users/user-1/status',
             headers: { authorization: 'Bearer test-token' },
             payload: { transition: 'activate', reason: 'Approved for access' },
         });
@@ -282,16 +282,16 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'GET /users',
+            name: 'GET /api/v1/users',
             method: 'GET' as const,
-            url: '/users?id=user-1',
+            url: '/api/v1/users?id=user-1',
             operation: 'find' as const,
             payload: undefined,
         },
         {
-            name: 'POST /users',
+            name: 'POST /api/v1/users',
             method: 'POST' as const,
-            url: '/users',
+            url: '/api/v1/users',
             operation: 'provision' as const,
             payload: {
                 cognitoSubject: 'cognito-2',
@@ -299,16 +299,16 @@ describe('IAM API routes', () => {
             },
         },
         {
-            name: 'PATCH /users/:id',
+            name: 'PATCH /api/v1/users/:id',
             method: 'PATCH' as const,
-            url: '/users/user-1',
+            url: '/api/v1/users/user-1',
             operation: 'update' as const,
             payload: { statusChangeReason: 'Correct profile data' },
         },
         {
-            name: 'PATCH /users/:id/status',
+            name: 'PATCH /api/v1/users/:id/status',
             method: 'PATCH' as const,
-            url: '/users/user-1/status',
+            url: '/api/v1/users/user-1/status',
             operation: 'transition' as const,
             payload: { transition: 'activate', reason: 'Approve access' },
         },
@@ -329,30 +329,30 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'GET /users',
+            name: 'GET /api/v1/users',
             method: 'GET' as const,
-            url: '/users?id=user-1',
+            url: '/api/v1/users?id=user-1',
             payload: undefined,
         },
         {
-            name: 'POST /users',
+            name: 'POST /api/v1/users',
             method: 'POST' as const,
-            url: '/users',
+            url: '/api/v1/users',
             payload: {
                 cognitoSubject: 'cognito-2',
                 reason: 'Provision account',
             },
         },
         {
-            name: 'PATCH /users/:id',
+            name: 'PATCH /api/v1/users/:id',
             method: 'PATCH' as const,
-            url: '/users/user-1',
+            url: '/api/v1/users/user-1',
             payload: { statusChangeReason: 'Correct profile data' },
         },
         {
-            name: 'PATCH /users/:id/status',
+            name: 'PATCH /api/v1/users/:id/status',
             method: 'PATCH' as const,
-            url: '/users/user-1/status',
+            url: '/api/v1/users/user-1/status',
             payload: { transition: 'activate', reason: 'Approve access' },
         },
     ])('denies unauthorized $name', async ({ method, url, payload }) => {
@@ -372,9 +372,9 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'POST /roles',
+            name: 'POST /api/v1/roles',
             method: 'POST' as const,
-            url: '/roles',
+            url: '/api/v1/roles',
             payload: {
                 key: 'academic-officer',
                 name: 'Academic Officer',
@@ -383,16 +383,16 @@ describe('IAM API routes', () => {
             operation: 'createRole' as const,
         },
         {
-            name: 'PATCH /roles/:id',
+            name: 'PATCH /api/v1/roles/:id',
             method: 'PATCH' as const,
-            url: '/roles/role-1',
+            url: '/api/v1/roles/role-1',
             payload: { name: 'Senior Academic Officer', reason: 'Rename role' },
             operation: 'modifyRole' as const,
         },
         {
-            name: 'PATCH /roles/:id/status',
+            name: 'PATCH /api/v1/roles/:id/status',
             method: 'PATCH' as const,
-            url: '/roles/role-1/status',
+            url: '/api/v1/roles/role-1/status',
             payload: { reason: 'Retire role' },
             operation: 'deactivateRole' as const,
         },
@@ -415,9 +415,9 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'POST /roles',
+            name: 'POST /api/v1/roles',
             method: 'POST' as const,
-            url: '/roles',
+            url: '/api/v1/roles',
             payload: {
                 key: 'academic-officer',
                 name: 'Academic Officer',
@@ -425,15 +425,15 @@ describe('IAM API routes', () => {
             },
         },
         {
-            name: 'PATCH /roles/:id',
+            name: 'PATCH /api/v1/roles/:id',
             method: 'PATCH' as const,
-            url: '/roles/role-1',
+            url: '/api/v1/roles/role-1',
             payload: { name: 'Senior Academic Officer', reason: 'Rename role' },
         },
         {
-            name: 'PATCH /roles/:id/status',
+            name: 'PATCH /api/v1/roles/:id/status',
             method: 'PATCH' as const,
-            url: '/roles/role-1/status',
+            url: '/api/v1/roles/role-1/status',
             payload: { reason: 'Retire role' },
         },
     ])('denies unauthorized $name', async ({ method, url, payload }) => {
@@ -453,30 +453,30 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'POST /roles/:id/permissions',
+            name: 'POST /api/v1/roles/:id/permissions',
             method: 'POST' as const,
-            url: '/roles/role-1/permissions',
+            url: '/api/v1/roles/role-1/permissions',
             payload: { permissionId: 'user.read', reason: 'Grant access' },
             operation: 'grantPermission' as const,
         },
         {
-            name: 'DELETE /roles/:id/permissions/:permissionId',
+            name: 'DELETE /api/v1/roles/:id/permissions/:permissionId',
             method: 'DELETE' as const,
-            url: '/roles/role-1/permissions/user.read',
+            url: '/api/v1/roles/role-1/permissions/user.read',
             payload: { reason: 'Revoke access' },
             operation: 'revokePermission' as const,
         },
         {
-            name: 'POST /users/:userId/roles/:roleId',
+            name: 'POST /api/v1/users/:userId/roles/:roleId',
             method: 'POST' as const,
-            url: '/users/user-1/roles/role-1',
+            url: '/api/v1/users/user-1/roles/role-1',
             payload: { reason: 'Assign role' },
             operation: 'assignRole' as const,
         },
         {
-            name: 'DELETE /users/:userId/roles/:roleId',
+            name: 'DELETE /api/v1/users/:userId/roles/:roleId',
             method: 'DELETE' as const,
-            url: '/users/user-1/roles/role-1',
+            url: '/api/v1/users/user-1/roles/role-1',
             payload: { reason: 'Revoke role' },
             operation: 'revokeRole' as const,
         },
@@ -499,27 +499,27 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'POST /roles/:id/permissions',
+            name: 'POST /api/v1/roles/:id/permissions',
             method: 'POST' as const,
-            url: '/roles/role-1/permissions',
+            url: '/api/v1/roles/role-1/permissions',
             payload: { permissionId: 'user.read', reason: 'Grant access' },
         },
         {
-            name: 'DELETE /roles/:id/permissions/:permissionId',
+            name: 'DELETE /api/v1/roles/:id/permissions/:permissionId',
             method: 'DELETE' as const,
-            url: '/roles/role-1/permissions/user.read',
+            url: '/api/v1/roles/role-1/permissions/user.read',
             payload: { reason: 'Revoke access' },
         },
         {
-            name: 'POST /users/:userId/roles/:roleId',
+            name: 'POST /api/v1/users/:userId/roles/:roleId',
             method: 'POST' as const,
-            url: '/users/user-1/roles/role-1',
+            url: '/api/v1/users/user-1/roles/role-1',
             payload: { reason: 'Assign role' },
         },
         {
-            name: 'DELETE /users/:userId/roles/:roleId',
+            name: 'DELETE /api/v1/users/:userId/roles/:roleId',
             method: 'DELETE' as const,
-            url: '/users/user-1/roles/role-1',
+            url: '/api/v1/users/user-1/roles/role-1',
             payload: { reason: 'Revoke role' },
         },
     ])('denies unauthorized $name', async ({ method, url, payload }) => {
@@ -539,16 +539,16 @@ describe('IAM API routes', () => {
 
     it.each([
         {
-            name: 'DELETE /roles/:id/permissions/:permissionId',
-            url: '/roles/role-1/permissions/user.read',
+            name: 'DELETE /api/v1/roles/:id/permissions/:permissionId',
+            url: '/api/v1/roles/role-1/permissions/user.read',
         },
         {
-            name: 'POST /users/:userId/roles/:roleId',
-            url: '/users/user-1/roles/role-1',
+            name: 'POST /api/v1/users/:userId/roles/:roleId',
+            url: '/api/v1/users/user-1/roles/role-1',
         },
         {
-            name: 'DELETE /users/:userId/roles/:roleId',
-            url: '/users/user-1/roles/role-1',
+            name: 'DELETE /api/v1/users/:userId/roles/:roleId',
+            url: '/api/v1/users/user-1/roles/role-1',
         },
     ])('rejects a missing reason for $name', async ({ url }) => {
         app = await application(dependencies());

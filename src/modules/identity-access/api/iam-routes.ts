@@ -132,7 +132,7 @@ async function authenticateRequest(
     request: FastifyRequest,
     dependencies: IamRoutesDependencies,
 ): Promise<void> {
-    if (request.routeOptions.url === '/auth/login') {
+    if (request.routeOptions.url === '/api/v1/auth/login') {
         return;
     }
 
@@ -226,7 +226,7 @@ export const iamRoutesPlugin = (
         fastify.decorateRequest('authenticationContext', null);
 
         fastify.post<{ Body: LoginBody }>(
-            '/auth/login',
+            '/api/v1/auth/login',
             {
                 schema: {
                     body: {
@@ -257,7 +257,7 @@ export const iamRoutesPlugin = (
             authenticateRequest(request, dependencies),
         );
 
-        fastify.get('/me', async (request) => {
+        fastify.get('/api/v1/me', async (request) => {
             const protectedRequestValue = protectedRequest(request);
             await authorize(protectedRequestValue, dependencies, 'user.read');
             const actor = actorFrom(
@@ -273,7 +273,7 @@ export const iamRoutesPlugin = (
         });
 
         fastify.get<{ Querystring: UserQuery }>(
-            '/users',
+            '/api/v1/users',
             {
                 schema: {
                     querystring: {
@@ -306,7 +306,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.post<{ Body: ProvisionUserBody }>(
-            '/users',
+            '/api/v1/users',
             {
                 schema: {
                     body: {
@@ -343,7 +343,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.patch<{ Params: UserIdParams; Body: UpdateUserBody }>(
-            '/users/:id',
+            '/api/v1/users/:id',
             {
                 schema: {
                     params: {
@@ -388,7 +388,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.patch<{ Params: UserIdParams; Body: StatusBody }>(
-            '/users/:id/status',
+            '/api/v1/users/:id/status',
             {
                 schema: {
                     params: {
@@ -439,7 +439,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.post<{ Body: RoleBody }>(
-            '/roles',
+            '/api/v1/roles',
             {
                 schema: {
                     body: {
@@ -477,7 +477,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.patch<{ Params: RoleIdParams; Body: ModifyRoleBody }>(
-            '/roles/:id',
+            '/api/v1/roles/:id',
             {
                 schema: {
                     params: {
@@ -522,7 +522,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.patch<{ Params: RoleIdParams; Body: ReasonBody }>(
-            '/roles/:id/status',
+            '/api/v1/roles/:id/status',
             {
                 schema: {
                     params: {
@@ -564,7 +564,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.post<{ Params: RoleIdParams; Body: PermissionBody }>(
-            '/roles/:id/permissions',
+            '/api/v1/roles/:id/permissions',
             {
                 schema: {
                     params: {
@@ -608,7 +608,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.delete<{ Params: RolePermissionParams; Body: ReasonBody }>(
-            '/roles/:id/permissions/:permissionId',
+            '/api/v1/roles/:id/permissions/:permissionId',
             {
                 schema: {
                     params: {
@@ -655,7 +655,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.post<{ Params: UserRoleParams; Body: ReasonBody }>(
-            '/users/:userId/roles/:roleId',
+            '/api/v1/users/:userId/roles/:roleId',
             {
                 schema: {
                     params: {
@@ -701,7 +701,7 @@ export const iamRoutesPlugin = (
         );
 
         fastify.delete<{ Params: UserRoleParams; Body: ReasonBody }>(
-            '/users/:userId/roles/:roleId',
+            '/api/v1/users/:userId/roles/:roleId',
             {
                 schema: {
                     params: {
