@@ -50,6 +50,14 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum AdmissionStatus {
+  OFFERED
+  ACCEPTED
+  DECLINED
+  DEFERRED
+  EXPIRED
+}
+
 enum StudentStatus {
   ACTIVE
   INACTIVE
@@ -228,6 +236,7 @@ model Student {
   profileHistory    StudentProfileHistory[]
   documents         StudentDocument[]
   applications      Application[]
+  admissions        Admission[]
 
   @@index([studentNumber])
   @@index([status])
@@ -315,6 +324,7 @@ model Programme {
   versions          ProgrammeVersion[]
   history           ProgrammeHistory[]
   applications      Application[]
+  admissions        Admission[]
 
   @@index([programmeCode])
   @@index([status])
@@ -386,6 +396,7 @@ model Session {
 
   history                 SessionHistory[]
   applications            Application[]
+  admissions              Admission[]
 
   @@index([status])
   @@index([startDate])
@@ -438,6 +449,7 @@ model Application {
   session               Session            @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   history               ApplicationHistory[]
   documents             ApplicationDocument[]
+  admission             Admission?
 
   @@index([studentId])
   @@index([programmeId])
@@ -486,4 +498,64 @@ model ApplicationDocument {
   @@index([applicationId, documentType])
   @@index([uploadedAt])
   @@map("application_documents")
+}
+
+model Admission {
+  id                      String           @id @default(uuid()) @db.Uuid
+  applicationId           String           @unique @map("application_id") @db.Uuid
+  studentId               String           @map("student_id") @db.Uuid
+  programmeId             String           @map("programme_id") @db.Uuid
+  sessionId               String           @map("session_id") @db.Uuid
+  status                  AdmissionStatus  @default(OFFERED)
+  offerDate               DateTime         @map("offer_date") @db.Timestamptz
+  acceptanceDeadline     DateTime         @map("acceptance_deadline") @db.Timestamptz
+  acceptedAt             DateTime?        @map("accepted_at") @db.Timestamptz
+  deferredAt             DateTime?        @map("deferred_at") @db.Timestamptz
+  deferralEndDate        DateTime?        @map("deferral_end_date") @db.Timestamptz
+  declinedAt             DateTime?        @map("declined_at") @db.Timestamptz
+  expiredAt              DateTime?        @map("expired_at") @db.Timestamptz
+  admissionLetter        String?          @map("admission_letter") @db.Text
+  letterGeneratedAt      DateTime?        @map("letter_generated_at") @db.Timestamptz
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+  createdBy              String           @map("created_by")
+  updatedBy              String           @map("updated_by")
+  statusChangedAt        DateTime         @default(now()) @map("status_changed_at")
+  statusChangedBy        String           @map("status_changed_by")
+  statusChangeReason     String           @map("status_change_reason")
+
+  application             Application       @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  student                 Student           @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  programme               Programme         @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  session                 Session           @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  history                 AdmissionHistory[]
+
+  @@index([studentId])
+  @@index([applicationId])
+  @@index([programmeId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([offerDate])
+  @@index([acceptanceDeadline])
+  @@index([acceptedAt])
+  @@map("admissions")
+}
+
+model AdmissionHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  admissionId       String     @map("admission_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  admission         Admission  @relation(fields: [admissionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([admissionId, changedAt])
+  @@index([changedAt])
+  @@map("admission_history")
 }

@@ -36,7 +36,6 @@ import {
   validateTerminalState,
   getStatusTransitionReason,
 } from '../domain/application-status-transitions';
-import { Application, ApplicationHistory, ApplicationDocument } from '@prisma/client';
 
 export class ManageApplications {
   constructor(
@@ -78,7 +77,7 @@ export class ManageApplications {
 
   async searchApplications(params: SearchApplicationsInput): Promise<ApplicationResponse[]> {
     const applications = await this.repository.search(params);
-    return Promise.all(applications.map((app: Application) => this.repository.toResponse(app)));
+    return Promise.all(applications.map((app) => this.repository.toResponse(app)));
   }
 
   async updateApplication(id: string, input: UpdateApplicationInput): Promise<ApplicationResponse> {
@@ -332,7 +331,7 @@ export class ManageApplications {
     }
 
     const documents = await this.repository.getDocuments(applicationId);
-    return Promise.all(documents.map((doc: ApplicationDocument) => this.repository.toDocumentResponse(doc)));
+    return Promise.all(documents.map((doc) => this.repository.toDocumentResponse(doc)));
   }
 
   async getHistory(applicationId: string): Promise<ApplicationHistoryRecord[]> {
@@ -342,6 +341,6 @@ export class ManageApplications {
     }
 
     const history = await this.repository.getHistory(applicationId);
-    return Promise.all(history.map((h: ApplicationHistory) => this.repository.toHistoryRecord(h)));
+    return Promise.all(history.map((h) => this.repository.toHistoryRecord(h)));
   }
 }
