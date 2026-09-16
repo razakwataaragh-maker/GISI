@@ -1,99 +1,210 @@
 # GISI Project Status
 
-**Snapshot date:** 2026-09-13  
-**Current phase:** `001-project-foundation` — Version 1.0, Phase 0  
+**Snapshot date:** 2026-09-16
+**Current phase:** Phase 6, Admission Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
 authoritative backlog and this file must not be treated as a replacement for
 it.
 
-## Completed tasks
+## Backlog Storage Warning
 
-The following tasks are currently marked `done` in the `todos` table:
+The `todos` and `todo_deps` tables are stored in a SQLite database local to each
+Copilot session at
+`~/.copilot/session-state/<session-id>/session.db`. They are not stored in the
+GISI Git repository and are not shared automatically between sessions.
 
-1. `establish-repository-layout` — Established the approved repository
-   structure for source, modules, infrastructure, database, deployment,
-   scripts, tests, and documentation.
-2. `select-and-record-technology-baseline` — Recorded the approved runtime,
-   language, API framework, database tooling, test runner, package manager, and
-   infrastructure-as-code baseline.
-3. `configure-dependency-management` — Established dependency manifests,
-   lockfile policy, runtime policy, and reproducible installation commands.
-4. `configure-development-quality-tools` — Implemented and installed ESLint,
-   Prettier, `.editorconfig`, and the `lint`, `format`, `format:check`, and
-   `typecheck` npm scripts; all quality checks pass as of commit
-   `93410e3ba8fe65e1f318cc710ffe16c443f8c259`.
-5. `document-local-development-environment` — Documented prerequisites,
-   setup, local services, database bootstrap, commands, and troubleshooting.
-6. `define-application-composition` — Defined the composition root, dependency
-   registration, lifecycle ownership, and graceful startup/shutdown design.
-7. `define-api-foundation` — Defined versioned REST API conventions, JSON
-   rules, OpenAPI ownership, middleware ordering, and routing boundaries.
-8. `implement-configuration-management` — Implemented typed configuration
-   categories, validation, safe defaults, precedence, and environment
-   boundaries without committing secrets.
-9. `establish-postgresql-connectivity` — Established PostgreSQL connection
-   lifecycle, pooling, readiness, transaction boundaries, and environment
-   access.
-10. `establish-database-migrations` — Defined migration ownership, naming,
-    execution, rollback, validation, local bootstrap, seeds, and CI checks.
-11. `define-data-integrity-conventions` — Defined database constraints,
-    foreign keys, indexes, historical preservation, audit storage, and table
-    ownership conventions.
-12. `implement-structured-logging` — Implemented structured logging with
-    severity, context, environment/version fields, and sensitive-data
-    redaction.
-13. `implement-correlation-identifiers` — Implemented correlation ID
-    propagation through requests, logs, response headers, and error responses.
-14. `define-error-taxonomy` — Defined stable categories and codes for
-    validation, access, resource, business, dependency, persistence, and
-    unexpected errors.
-15. `implement-api-error-boundary` — Implemented centralized error
-    translation, status mapping, safe responses, validation details,
-    correlation IDs, and diagnostic logging.
-16. `implement-health-endpoints` — Implemented dependency-free liveness and
-    PostgreSQL-backed readiness endpoints with safe responses.
-17. `implement-version-endpoint` — Implemented the public version endpoint
-    using controlled application metadata.
-18. `establish-test-harness` — Established independent deterministic test
-    suites and V8 coverage reporting with forward-looking layer thresholds.
-19. `add-foundation-tests` — Added foundation coverage for configuration,
-    database lifecycle, health/readiness, version, logging redaction, error
-    contracts, and architecture boundaries.
-20. `establish-security-baseline` — Defined secrets handling, TLS, secure
-    headers, CORS, rate limiting, dependency scanning, validation, and
-    authentication/authorization boundaries.
-21. `define-audit-boundary` — Defined immutable audit records, event
-    categories, ownership, retention, safe fields, and separation from
-    operational logs.
+If a new session's eligible-task query unexpectedly returns zero rows, this does
+**not** mean the backlog is actually empty. Check for an existing populated
+`session.db` from a prior session before assuming data loss.
 
-## Remaining tasks in dependency order
+The recovery procedure used on 2026-09-13 was to locate the prior session
+database by searching `~/.copilot/session-state/*/session.db` for one containing
+populated `todos` and `todo_deps` tables, read all source rows read-only, and
+insert them into the new session's own tables using explicit `BEGIN`/`COMMIT`
+transactions. The `id`, `status`, and timestamps were preserved exactly; no
+statuses were reset.
 
-These are the four tasks currently marked `pending`. Their dependency order is
-determined from `todo_deps`; do not begin a task until the standard eligible
-task query identifies it.
+Multiple `session.db` files can exist with identical row and dependency counts
+but different, stale task statuses. Matching counts do **not** mean matching
+data. Before trusting recovered backlog data, cross-check the statuses of the
+most recently active tasks — currently
+`implement-authentication`, `implement-user-management`,
+`implement-roles-and-permissions`, and `implement-audit-writer` — against this
+document's Completed tasks list, which is the durable ground truth. If a
+`session.db` disagrees with this document, this document wins and the
+`session.db` must be corrected to match, not the other way around. During
+recovery, check file modification times first with
+`ls -la --time-style=full-iso /home/wataara/.copilot/session-state/*/session.db`,
+but always verify actual task statuses afterward; the newest file is not
+guaranteed to be the most complete one.
 
-1. `configure-continuous-integration` — Create CI checks for installation,
-   formatting, linting, type checking, tests, migrations, architecture rules,
-   security scans, secret scans, and artifacts.
-   - Depends on: `add-foundation-tests` (`done`) and
-     `establish-security-baseline` (`done`).
-2. `define-continuous-delivery` — Define immutable artifacts, environment
-   promotion, approvals, configuration injection, migration sequencing,
-   health verification, rollback, and AWS deployment boundaries.
-   - Depends on: `configure-continuous-integration` (`pending`).
-3. `complete-foundation-documentation` — Complete README and architecture,
-   API, configuration, database, logging, testing, security, CI/CD,
-   deployment, rollback, backup, and recovery documentation.
-   - Depends on: `define-audit-boundary` (`done`),
-     `document-local-development-environment` (`done`), and
-     `define-continuous-delivery` (`pending`).
-4. `review-and-approve-foundation` — Run the foundation checklist,
-   architecture and security reviews, acceptance verification, risk review,
-   and the readiness gate for Identity and Access Management.
-   - Depends on: `configure-continuous-integration` (`pending`) and
-     `complete-foundation-documentation` (`pending`).
+Background or abandoned coding-agent sessions have produced significant
+unreviewed, uncommitted work twice: exploratory IAM schema work, and a full
+Student module plus server bootstrap layer. The latter was preserved in commits
+`e4ad138` and `52a04e6` on the
+`exploratory/unreviewed-student-and-bootstrap-work` branch. At the start of
+every new session, run `git status` first to check for untracked or uncommitted
+files that were never reviewed.
+
+`PROJECT_STATUS.md` itself, committed to Git, is the true durable source of
+truth for which tasks are complete. The session database is a convenient
+working tool within one session, not the permanent record. If the two ever
+disagree, `PROJECT_STATUS.md` and Git history govern.
+
+## Backlog summary
+
+The current backlog contains **84 total tasks: 79 done and 5 pending**.
+
+## Phase 0 status
+
+Project Foundation (Phase 0) is fully complete and approved.
+
+## Phase 1 completed tasks
+
+The following 13 of 13 Phase 1 tasks have been completed and independently verified, in order:
+
+1. `define-iam-architecture` — `e7b8fc6`
+2. `define-authentication-architecture` — `2e8c99c`
+3. `define-authorization-architecture` — `4ea6458`
+4. `define-iam-data-model` — `9b286ca`
+5. `establish-iam-persistence` — `12ef7cd`
+6. `implement-authentication` — `e64a686`
+7. `implement-user-management` — `07cf480`
+8. `implement-roles-and-permissions` — `0e25bd4`
+9. `implement-iam-api-endpoints` — `fc6193c` (added missing auth endpoints)
+10. `implement-iam-audit-logging` — already comprehensively implemented across all IAM services
+11. `harden-iam-security-controls` — `42b43ef` (rate limiting, CORS, security headers, payload limits)
+12. `add-iam-tests` — `23bb4f3` (domain layer tests to improve coverage)
+13. `review-and-approve-iam` — `c92c0a5` (final review, TypeScript fixes, approval)
+
+The separately tracked foundation task `implement-audit-writer` is also
+complete in commit `10f8f42`. The latest corrective commits associated with
+these completed tasks include `3aff673`, `12d927f`, `b2658ad`, and `91bab58`;
+the task status remains governed by the completed-task list above and the
+verified implementation history.
+
+## Remaining Phase 1 tasks in dependency order
+
+None - Phase 1 is complete and approved.
+
+## Phase 2 completed tasks
+
+The following 9 of 9 Phase 2 tasks have been completed and independently verified, in order:
+
+1. `define-student-architecture` — `4c1e6bd` (student module structure, boundaries, dependencies)
+2. `define-student-data-model` — `fec9860` (Prisma schema for students, history, documents)
+3. `establish-student-persistence` — `fec9860` (StudentRepository with CRUD operations)
+4. `implement-student-domain` — `fec9860` (status transitions, domain errors, business rules)
+5. `implement-student-application` — `fec9860` (ManageStudents service with audit logging)
+6. `implement-student-api` — `fec9860` (6 REST endpoints with /api/v1/students versioning)
+7. `implement-student-audit-logging` — `fec9860` (comprehensive audit logging across operations)
+8. `add-student-tests` — `40ae8a5` (27 domain tests for status transitions and errors)
+9. `review-and-approve-student` — `6c9ffdd` (TypeScript fixes, final review, approval)
+
+## Remaining Phase 2 tasks in dependency order
+
+None - Phase 2 is complete and approved.
+
+## Phase 3 completed tasks
+
+The following 9 of 9 Phase 3 tasks have been completed and independently verified, in order:
+
+1. `define-programme-architecture` — `4424dbe` (programme module structure, boundaries, dependencies)
+2. `define-programme-data-model` — `7a7ad76` (Prisma schema for programmes, versions, history)
+3. `establish-programme-persistence` — `7a7ad76` (ProgrammeRepository with CRUD operations)
+4. `implement-programme-domain` — `7a7ad76` (status transitions, domain errors, business rules)
+5. `implement-programme-application` — `7a7ad76` (ManageProgrammes service with audit logging)
+6. `implement-programme-api` — `7a7ad76` (5 REST endpoints with /api/v1/programmes versioning)
+7. `implement-programme-audit-logging` — `7a7ad76` (comprehensive audit logging across operations)
+8. `add-programme-tests` — `7a7ad76` (26 domain tests for status transitions and errors)
+9. `review-and-approve-programme` — Final review and approval
+
+## Remaining Phase 3 tasks in dependency order
+
+None - Phase 3 is complete and approved.
+
+## Phase 4 completed tasks
+
+The following 9 of 9 Phase 4 tasks have been completed and independently verified, in order:
+
+1. `define-session-architecture` — `1fa7515` (session module structure, boundaries, dependencies)
+2. `define-session-data-model` — `6017fd2` (Prisma schema for sessions, history, windows)
+3. `establish-session-persistence` — `6017fd2` (SessionRepository with CRUD operations)
+4. `implement-session-domain` — `6017fd2` (status transitions, domain errors, business rules)
+5. `implement-session-application` — `6017fd2` (ManageSessions service with audit logging)
+6. `implement-session-api` — `6017fd2` (6 REST endpoints with /api/v1/sessions versioning)
+7. `implement-session-audit-logging` — `6017fd2` (comprehensive audit logging across operations)
+8. `add-session-tests` — `6017fd2` (39 domain tests for status transitions and errors)
+9. `review-and-approve-session` — Final review and approval
+
+## Remaining Phase 4 tasks in dependency order
+
+None - Phase 4 is complete and approved.
+
+## Phase 5 completed tasks
+
+The following 9 of 9 Phase 5 tasks have been completed and independently verified, in order:
+
+1. `define-application-architecture` — `1dd5f75` (application module structure, boundaries, dependencies)
+2. `define-application-data-model` — `f39f643` (Prisma schema for applications, history, documents)
+3. `establish-application-persistence` — `f39f643` (ApplicationRepository with CRUD operations)
+4. `implement-application-domain` — `f39f643` (status transitions, domain errors, business rules)
+5. `implement-application-application` — `f39f643` (ManageApplications service with audit logging)
+6. `implement-application-api` — `f39f643` (12 REST endpoints with /api/v1/applications versioning)
+7. `implement-application-audit-logging` — `f39f643` (comprehensive audit logging across operations)
+8. `add-application-tests` — `f39f643` (98 domain tests for status transitions and errors)
+9. `review-and-approve-application` — Final review and approval
+
+## Remaining Phase 5 tasks in dependency order
+
+None - Phase 5 is complete and approved.
+
+## Phase 6 completed tasks
+
+The following 9 of 9 Phase 6 tasks have been completed and independently verified, in order:
+
+1. `define-admission-architecture` — `b425a11` (admission module structure, boundaries, dependencies)
+2. `define-admission-data-model` — `30be632` (Prisma schema for admissions, history, letters)
+3. `establish-admission-persistence` — `30be632` (AdmissionRepository with CRUD operations)
+4. `implement-admission-domain` — `30be632` (status transitions, domain errors, business rules)
+5. `implement-admission-application` — `30be632` (ManageAdmissions service with audit logging)
+6. `implement-admission-api` — `30be632` (8 REST endpoints with /api/v1/admissions versioning)
+7. `implement-admission-audit-logging` — `30be632` (comprehensive audit logging across operations)
+8. `add-admission-tests` — `30be632` (77 domain tests for status transitions and errors)
+9. `review-and-approve-admission` — Final review and approval
+
+## Remaining Phase 6 tasks in dependency order
+
+None - Phase 6 is complete and approved.
+
+## Known incident
+
+A migration-integrity violation occurred and was remediated by regenerating the
+local migration history from the Prisma schema. It is resolved, not open. See
+the incident note in `docs/architecture/database-migrations.md` and commits
+`459f2f9` and `e877d1d` for details.
+
+## Resolved issue
+
+A database-level safeguard preventing Finance Officer roles from ever being
+granted Activation-domain permissions was designed and approved during
+`implement-roles-and-permissions` Stage 1, but was absent from the schema and
+migrations. This has been resolved by:
+
+1. Adding the missing `rank` field to the Role model in Prisma schema
+2. Adding the missing BootstrapControl model to Prisma schema
+3. Creating migration `20260916100000_add_iam_domain_safeguards` with:
+   - Rank field addition with index
+   - BootstrapControl table creation
+   - Database trigger enforcing Finance Officer restriction
+4. Adding integration tests for the safeguards
+5. Updating documentation in `docs/architecture/iam-data-model.md`
+
+The safeguard now prevents Finance Officer roles from being granted
+Activation-domain permissions through a database trigger, enforcing the
+business rule that Finance determines eligibility but does not activate students.
 
 ## Key architectural decisions
 
@@ -137,15 +248,17 @@ database, and AWS is the initial cloud target.
 
 ## Known deferred items
 
-- No live PostgreSQL instance has been provisioned yet. Integration tests and
-  live migration checks remain explicitly deferred; they must not be
-  fabricated or replaced with SQLite.
+- A working local PostgreSQL database now exists through
+  `deploy/local/compose.yml`. Use Docker Compose (`docker compose`), not Podman:
+  the container-tool configuration defaults to Podman, but Podman is not
+  installed on this host. Docker must be used every time for this local service.
 - `buildIdentity` from the version endpoint is currently the intentional
   placeholder `name@version`, pending real Git SHA or CI build metadata.
 
 ## Instructions for continuing
 
-1. Run the standard eligible-task query:
+1. Run the standard eligible-task query and confirm the next task from the
+   actual `todos` and `todo_deps` tables:
 
    ```sql
    SELECT t.id, t.title, t.status FROM todos t
@@ -162,9 +275,12 @@ database, and AWS is the initial cloud target.
    ```
 
 2. Implement **only** the task returned by that query.
-3. Verify the work with real command output, not summaries.
-4. Commit the completed task in its own commit.
-5. Mark only that task `done` after acceptance criteria and validation are
+3. Always obtain raw `cat`, `git`, and test output; never trust a summary of
+   file contents.
+4. Verify migrations are generated only by Prisma itself and are never
+   hand-edited; see the migration incident note for why.
+5. Commit the completed task in its own commit.
+6. Mark only that task `done` after acceptance criteria and validation are
    satisfied, then stop.
 
 All decisions and architecture live in `docs/`, especially

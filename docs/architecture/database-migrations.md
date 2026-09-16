@@ -41,6 +41,14 @@ Schema changes must precede application code that requires them. Destructive
 changes require explicit review. Manual changes to shared, staging, or
 production schemas are prohibited.
 
+Prisma-generated migration SQL must not be edited after a migration has been
+applied. One narrow exception is permitted: a new, unapplied migration created
+with `prisma migrate dev --create-only` may be edited before its first
+application to add PostgreSQL SQL that Prisma cannot generate from
+`schema.prisma`, such as triggers or functions. It must then be applied through
+the normal Prisma migration flow. Editing an already-applied migration or
+manually altering Prisma's checksum tracking remains strictly prohibited.
+
 All schema changes must also satisfy
 `data-integrity-conventions.md`, including explicit foreign keys, constraints,
 justified indexes, module table ownership, transaction boundaries, historical
@@ -70,3 +78,33 @@ database and a secret supplied through `DATABASE_URL`. No live PostgreSQL
 infrastructure is currently provisioned in this repository, so live migration
 application and drift checks are deferred rather than fabricated. Schema
 validation, client generation, and empty-diff checks remain runnable locally.
+
+## Migration integrity incident
+
+On 2026-09-13, the solo local development database was reset and the IAM
+assignment-history migration and its dependent audit migration were regenerated
+from `prisma/schema.prisma` after hand-touched SQL caused a migration-integrity
+violation. The regenerated migrations were applied to a clean local PostgreSQL
+database and verified with `prisma migrate status` and PostgreSQL schema
+inspection.
+
+This is a recorded example of what not to do: migration SQL and Prisma migration
+checksums must never be edited manually, and checksum overrides or manual `psql`
+changes must not be used to bypass Prisma integrity checks. For shared,
+staging, or production databases, use a reviewed forward-fix migration instead
+of resetting history.
+
+## Domain safeguards migration
+
+On 2026-09-16, migration `20260916100000_add_iam_domain_safeguards` was created to
+restore missing database-level safeguards that were designed during Phase 1
+IAM implementation but not implemented in the initial migrations. This migration:
+
+- Adds the `rank` field to the Role model for privilege escalation prevention
+- Creates the BootstrapControl table for controlled system-administrator bootstrap
+- Implements a database trigger preventing Finance Officer roles from being
+  granted Activation-domain permissions, enforcing the business rule that
+  Finance determines eligibility but does not activate students
+
+The migration includes integration tests to verify the safeguards function correctly
+and is documented in `docs/architecture/iam-data-model.md`.

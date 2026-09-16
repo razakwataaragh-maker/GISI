@@ -6,3 +6,556 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserStatus {
+  ACTIVE
+  DEACTIVATED
+  SUSPENDED
+}
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RolePermissionStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum UserRoleAssignmentStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum ProgrammeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SessionStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  INFORMATION_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum AdmissionStatus {
+  OFFERED
+  ACCEPTED
+  DECLINED
+  DEFERRED
+  EXPIRED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  GRADUATED
+  WITHDRAWN
+}
+
+model User {
+  id                String     @id @default(uuid()) @db.Uuid
+  cognitoSubject    String     @unique @map("cognito_subject")
+  status            UserStatus
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  activatedAt       DateTime?  @map("activated_at")
+  deactivatedAt     DateTime?  @map("deactivated_at")
+  suspendedAt       DateTime?  @map("suspended_at")
+  statusChangedAt   DateTime   @map("status_changed_at")
+  statusChangedBy   String     @map("status_changed_by")
+  statusChangeReason String    @map("status_change_reason")
+
+  roleAssignments UserRoleAssignment[]
+
+  @@index([status])
+  @@map("users")
+}
+
+model Role {
+  id                 String     @id @default(uuid()) @db.Uuid
+  key                String     @unique
+  name               String
+  description        String?
+  status             RoleStatus
+  rank               Int        @default(0)
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  createdBy          String     @map("created_by")
+  updatedBy          String     @map("updated_by")
+  deactivatedAt      DateTime?  @map("deactivated_at")
+  deactivatedBy      String?    @map("deactivated_by")
+  deactivationReason String?    @map("deactivation_reason")
+  changeReference    String?    @map("change_reference")
+
+  permissions     RolePermission[]
+  userAssignments UserRoleAssignment[]
+
+  @@index([status])
+  @@index([rank])
+  @@map("roles")
+}
+
+model PermissionReference {
+  id          String           @id
+  rolePermissions RolePermission[]
+
+  @@map("permission_references")
+}
+
+model RolePermission {
+  id                 String               @id @default(uuid()) @db.Uuid
+  roleId             String               @map("role_id") @db.Uuid
+  permissionId       String               @map("permission_id")
+  status             RolePermissionStatus
+  assignedAt         DateTime             @map("assigned_at")
+  assignedBy         String               @map("assigned_by")
+  assignmentReason   String               @map("assignment_reason")
+  revokedAt          DateTime?            @map("revoked_at")
+  revokedBy          String?              @map("revoked_by")
+  revocationReason   String?              @map("revocation_reason")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  changeReference    String?              @map("change_reference")
+
+  role       Role               @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  permission PermissionReference @relation(fields: [permissionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([roleId, status])
+  @@index([permissionId, status])
+  @@map("role_permissions")
+}
+
+model UserRoleAssignment {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  userId             String                    @map("user_id") @db.Uuid
+  roleId             String                    @map("role_id") @db.Uuid
+  status             UserRoleAssignmentStatus
+  assignedAt         DateTime                  @map("assigned_at")
+  assignedBy         String                    @map("assigned_by")
+  revokedAt          DateTime?                 @map("revoked_at")
+  revokedBy          String?                   @map("revoked_by")
+  assignmentReason   String                    @map("assignment_reason")
+  revocationReason   String?                   @map("revocation_reason")
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @updatedAt @map("updated_at")
+  changeReference    String?                   @map("change_reference")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([userId, status])
+  @@index([roleId, status])
+  @@index([assignedBy, assignedAt])
+  @@index([userId, assignedAt])
+  @@index([roleId, assignedAt])
+  @@map("user_role_assignments")
+}
+
+model AuditEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  eventName       String   @map("event_name")
+  category        String
+  actorId         String?  @map("actor_id")
+  actorType       String   @map("actor_type")
+  targetType      String   @map("target_type")
+  targetId        String?  @map("target_id")
+  action          String
+  outcome         String
+  occurredAt      DateTime @map("occurred_at")
+  recordedAt      DateTime @default(now()) @map("recorded_at")
+  correlationId   String?  @map("correlation_id")
+  owningModule    String   @map("owning_module")
+  sourceBoundary  String   @map("source_boundary")
+  reason          String?
+  changeReference String?  @map("change_reference")
+  beforeState     Json?    @map("before_state")
+  afterState      Json?    @map("after_state")
+
+  @@index([eventName, occurredAt])
+  @@index([actorId, occurredAt])
+  @@index([targetType, targetId, occurredAt])
+  @@index([correlationId])
+  @@map("audit_events")
+}
+
+model BootstrapControl {
+  id              String   @id
+  consumedAt      DateTime? @map("consumed_at")
+  consumedBy      String?  @map("consumed_by")
+  changeReference String?  @map("change_reference")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("bootstrap_control")
+}
+
+model Student {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentNumber     String     @unique @map("student_number")
+  firstName         String     @map("first_name")
+  lastName          String     @map("last_name")
+  dateOfBirth       DateTime? @map("date_of_birth") @db.Timestamptz
+  gender            String?
+  email             String?
+  phone             String?
+  nationalId        String?    @map("national_id")
+  passportNumber    String?    @map("passport_number")
+  addressLine1      String?    @map("address_line1")
+  addressLine2      String?    @map("address_line2")
+  city              String?
+  state             String?
+  postalCode        String?    @map("postal_code")
+  country           String?
+  emergencyContactName String? @map("emergency_contact_name")
+  emergencyContactPhone String? @map("emergency_contact_phone")
+  emergencyContactRelationship String? @map("emergency_contact_relationship")
+  status            StudentStatus
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  createdBy         String     @map("created_by")
+  updatedBy         String     @map("updated_by")
+  statusChangedAt   DateTime   @map("status_changed_at")
+  statusChangedBy   String     @map("status_changed_by")
+  statusChangeReason String    @map("status_change_reason")
+
+  statusHistory     StudentStatusHistory[]
+  profileHistory    StudentProfileHistory[]
+  documents         StudentDocument[]
+  applications      Application[]
+  admissions        Admission[]
+
+  @@index([studentNumber])
+  @@index([status])
+  @@index([lastName, firstName])
+  @@map("students")
+}
+
+model StudentStatusHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentId         String     @map("student_id") @db.Uuid
+  previousStatus    StudentStatus @map("previous_status")
+  newStatus         StudentStatus @map("new_status")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([studentId, changedAt])
+  @@index([changedAt])
+  @@map("student_status_history")
+}
+
+model StudentProfileHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentId         String     @map("student_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([studentId, changedAt])
+  @@index([changedAt])
+  @@map("student_profile_history")
+}
+
+model StudentDocument {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentId         String     @map("student_id") @db.Uuid
+  documentType      String     @map("document_type")
+  fileName          String     @map("file_name")
+  storagePath       String     @map("storage_path")
+  fileSize          Int        @map("file_size")
+  mimeType          String     @map("mime_type")
+  uploadedAt        DateTime   @map("uploaded_at")
+  uploadedBy        String     @map("uploaded_by")
+  uploadReason      String?    @map("upload_reason") @db.Text
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([studentId, documentType])
+  @@index([uploadedAt])
+  @@map("student_documents")
+}
+
+model Programme {
+  id                String              @id @default(uuid()) @db.Uuid
+  programmeCode     String              @unique @map("programme_code")
+  name              String              @map("name")
+  description       String?             @map("description") @db.Text
+  status            ProgrammeStatus      @default(DRAFT)
+  currentVersion    Int                 @default(1) @map("current_version")
+  effectiveFrom     DateTime?           @map("effective_from") @db.Timestamptz
+  effectiveTo       DateTime?           @map("effective_to") @db.Timestamptz
+  publishedAt       DateTime?           @map("published_at") @db.Timestamptz
+  archivedAt        DateTime?           @map("archived_at") @db.Timestamptz
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  createdBy         String              @map("created_by")
+  updatedBy         String              @map("updated_by")
+  statusChangedAt   DateTime            @default(now()) @map("status_changed_at")
+  statusChangedBy   String              @map("status_changed_by")
+  statusChangeReason String             @map("status_change_reason")
+
+  versions          ProgrammeVersion[]
+  history           ProgrammeHistory[]
+  applications      Application[]
+  admissions        Admission[]
+
+  @@index([programmeCode])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([effectiveFrom, effectiveTo])
+  @@map("programmes")
+}
+
+model ProgrammeVersion {
+  id                String     @id @default(uuid()) @db.Uuid
+  programmeId       String     @map("programme_id") @db.Uuid
+  versionNumber     Int        @map("version_number")
+  programmeCode     String     @map("programme_code")
+  name              String     @map("name")
+  description       String?    @map("description") @db.Text
+  effectiveFrom     DateTime?  @map("effective_from") @db.Timestamptz
+  effectiveTo       DateTime?  @map("effective_to") @db.Timestamptz
+  publishedAt       DateTime?  @map("published_at") @db.Timestamptz
+  createdAt         DateTime   @default(now()) @map("created_at")
+  createdBy         String     @map("created_by")
+
+  programme         Programme  @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([programmeId, versionNumber])
+  @@index([programmeId, versionNumber])
+  @@index([programmeCode])
+  @@map("programme_versions")
+}
+
+model ProgrammeHistory {
+  id                String              @id @default(uuid()) @db.Uuid
+  programmeId       String              @map("programme_id") @db.Uuid
+  changedField      String              @map("changed_field")
+  previousValue     String?             @map("previous_value")
+  newValue          String?             @map("new_value")
+  changedAt         DateTime            @map("changed_at")
+  changedBy         String              @map("changed_by")
+  changeReason      String              @map("change_reason")
+  changeReference   String?             @map("change_reference")
+  createdAt         DateTime            @default(now()) @map("created_at")
+
+  programme         Programme           @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([programmeId, changedAt])
+  @@index([changedAt])
+  @@map("programme_history")
+}
+
+model Session {
+  id                      String          @id @default(uuid()) @db.Uuid
+  name                    String          @map("name")
+  startDate               DateTime        @map("start_date") @db.Timestamptz
+  endDate                 DateTime        @map("end_date") @db.Timestamptz
+  applicationWindowStart  DateTime?       @map("application_window_start") @db.Timestamptz
+  applicationWindowEnd    DateTime?       @map("application_window_end") @db.Timestamptz
+  registrationWindowStart DateTime?       @map("registration_window_start") @db.Timestamptz
+  registrationWindowEnd   DateTime?       @map("registration_window_end") @db.Timestamptz
+  status                  SessionStatus   @default(DRAFT)
+  openedAt                DateTime?       @map("opened_at") @db.Timestamptz
+  closedAt                DateTime?       @map("closed_at") @db.Timestamptz
+  archivedAt              DateTime?       @map("archived_at") @db.Timestamptz
+  createdAt               DateTime        @default(now()) @map("created_at")
+  updatedAt               DateTime        @updatedAt @map("updated_at")
+  createdBy               String          @map("created_by")
+  updatedBy               String          @map("updated_by")
+  statusChangedAt         DateTime        @default(now()) @map("status_changed_at")
+  statusChangedBy         String          @map("status_changed_by")
+  statusChangeReason      String          @map("status_change_reason")
+
+  history                 SessionHistory[]
+  applications            Application[]
+  admissions              Admission[]
+
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([applicationWindowStart, applicationWindowEnd])
+  @@index([registrationWindowStart, registrationWindowEnd])
+  @@map("sessions")
+}
+
+model SessionHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  sessionId         String     @map("session_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  session           Session    @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([sessionId, changedAt])
+  @@index([changedAt])
+  @@map("session_history")
+}
+
+model Application {
+  id                    String             @id @default(uuid()) @db.Uuid
+  studentId             String             @map("student_id") @db.Uuid
+  programmeId           String             @map("programme_id") @db.Uuid
+  sessionId             String             @map("session_id") @db.Uuid
+  status                ApplicationStatus  @default(DRAFT)
+  personalStatement     String?            @map("personal_statement") @db.Text
+  academicHistory       String?            @map("academic_history") @db.Text
+  submittedAt           DateTime?          @map("submitted_at") @db.Timestamptz
+  decisionDate          DateTime?          @map("decision_date") @db.Timestamptz
+  decisionReason        String?            @map("decision_reason") @db.Text
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  createdBy             String             @map("created_by")
+  updatedBy             String             @map("updated_by")
+  statusChangedAt       DateTime            @default(now()) @map("status_changed_at")
+  statusChangedBy       String             @map("status_changed_by")
+  statusChangeReason    String             @map("status_change_reason")
+
+  student               Student            @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  programme             Programme          @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  session               Session            @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  history               ApplicationHistory[]
+  documents             ApplicationDocument[]
+  admission             Admission?
+
+  @@index([studentId])
+  @@index([programmeId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([decisionDate])
+  @@map("applications")
+}
+
+model ApplicationHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  applicationId      String     @map("application_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([applicationId, changedAt])
+  @@index([changedAt])
+  @@map("application_history")
+}
+
+model ApplicationDocument {
+  id                String     @id @default(uuid()) @db.Uuid
+  applicationId     String     @map("application_id") @db.Uuid
+  documentType      String     @map("document_type")
+  fileName          String     @map("file_name")
+  storagePath       String     @map("storage_path")
+  fileSize          Int        @map("file_size")
+  mimeType          String     @map("mime_type")
+  uploadedAt        DateTime   @map("uploaded_at") @db.Timestamptz
+  uploadedBy        String     @map("uploaded_by")
+  uploadReason      String?    @map("upload_reason") @db.Text
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([applicationId, documentType])
+  @@index([uploadedAt])
+  @@map("application_documents")
+}
+
+model Admission {
+  id                      String           @id @default(uuid()) @db.Uuid
+  applicationId           String           @unique @map("application_id") @db.Uuid
+  studentId               String           @map("student_id") @db.Uuid
+  programmeId             String           @map("programme_id") @db.Uuid
+  sessionId               String           @map("session_id") @db.Uuid
+  status                  AdmissionStatus  @default(OFFERED)
+  offerDate               DateTime         @map("offer_date") @db.Timestamptz
+  acceptanceDeadline     DateTime         @map("acceptance_deadline") @db.Timestamptz
+  acceptedAt             DateTime?        @map("accepted_at") @db.Timestamptz
+  deferredAt             DateTime?        @map("deferred_at") @db.Timestamptz
+  deferralEndDate        DateTime?        @map("deferral_end_date") @db.Timestamptz
+  declinedAt             DateTime?        @map("declined_at") @db.Timestamptz
+  expiredAt              DateTime?        @map("expired_at") @db.Timestamptz
+  admissionLetter        String?          @map("admission_letter") @db.Text
+  letterGeneratedAt      DateTime?        @map("letter_generated_at") @db.Timestamptz
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+  createdBy              String           @map("created_by")
+  updatedBy              String           @map("updated_by")
+  statusChangedAt        DateTime         @default(now()) @map("status_changed_at")
+  statusChangedBy        String           @map("status_changed_by")
+  statusChangeReason     String           @map("status_change_reason")
+
+  application             Application       @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  student                 Student           @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  programme               Programme         @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  session                 Session           @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  history                 AdmissionHistory[]
+
+  @@index([studentId])
+  @@index([applicationId])
+  @@index([programmeId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([offerDate])
+  @@index([acceptanceDeadline])
+  @@index([acceptedAt])
+  @@map("admissions")
+}
+
+model AdmissionHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  admissionId       String     @map("admission_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  admission         Admission  @relation(fields: [admissionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([admissionId, changedAt])
+  @@index([changedAt])
+  @@map("admission_history")
+}
