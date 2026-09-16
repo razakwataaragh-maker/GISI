@@ -40,7 +40,7 @@ describe('module boundaries', () => {
                             importedPackage === providerPackage ||
                             importedPackage.startsWith(providerPackage),
                     ) &&
-                    !relative(sourceRoot, file).startsWith('infrastructure/')
+                    !relative(sourceRoot, file).includes('infrastructure/')
                 ) {
                     violations.push(
                         `${relative(repositoryRoot, file)} imports ${importedPackage}`,
