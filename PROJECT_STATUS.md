@@ -1,7 +1,7 @@
 # GISI Project Status
 
 **Snapshot date:** 2026-09-16
-**Current phase:** Phase 2, Student Management — complete and approved
+**Current phase:** Phase 3, Programme Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -55,7 +55,7 @@ disagree, `PROJECT_STATUS.md` and Git history govern.
 
 ## Backlog summary
 
-The current backlog contains **48 total tasks: 43 done and 5 pending**.
+The current backlog contains **57 total tasks: 52 done and 5 pending**.
 
 ## Phase 0 status
 
@@ -106,6 +106,24 @@ The following 9 of 9 Phase 2 tasks have been completed and independently verifie
 ## Remaining Phase 2 tasks in dependency order
 
 None - Phase 2 is complete and approved.
+
+## Phase 3 completed tasks
+
+The following 9 of 9 Phase 3 tasks have been completed and independently verified, in order:
+
+1. `define-programme-architecture` — `4424dbe` (programme module structure, boundaries, dependencies)
+2. `define-programme-data-model` — `7a7ad76` (Prisma schema for programmes, versions, history)
+3. `establish-programme-persistence` — `7a7ad76` (ProgrammeRepository with CRUD operations)
+4. `implement-programme-domain` — `7a7ad76` (status transitions, domain errors, business rules)
+5. `implement-programme-application` — `7a7ad76` (ManageProgrammes service with audit logging)
+6. `implement-programme-api` — `7a7ad76` (5 REST endpoints with /api/v1/programmes versioning)
+7. `implement-programme-audit-logging` — `7a7ad76` (comprehensive audit logging across operations)
+8. `add-programme-tests` — `7a7ad76` (26 domain tests for status transitions and errors)
+9. `review-and-approve-programme` — Final review and approval
+
+## Remaining Phase 3 tasks in dependency order
+
+None - Phase 3 is complete and approved.
 
 ## Known incident
 
