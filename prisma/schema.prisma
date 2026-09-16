@@ -34,6 +34,13 @@ enum ProgrammeStatus {
   ARCHIVED
 }
 
+enum SessionStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
 enum StudentStatus {
   ACTIVE
   INACTIVE
@@ -343,4 +350,54 @@ model ProgrammeHistory {
   @@index([programmeId, changedAt])
   @@index([changedAt])
   @@map("programme_history")
+}
+
+model Session {
+  id                      String          @id @default(uuid()) @db.Uuid
+  name                    String          @map("name")
+  startDate               DateTime        @map("start_date") @db.Timestamptz
+  endDate                 DateTime        @map("end_date") @db.Timestamptz
+  applicationWindowStart  DateTime?       @map("application_window_start") @db.Timestamptz
+  applicationWindowEnd    DateTime?       @map("application_window_end") @db.Timestamptz
+  registrationWindowStart DateTime?       @map("registration_window_start") @db.Timestamptz
+  registrationWindowEnd   DateTime?       @map("registration_window_end") @db.Timestamptz
+  status                  SessionStatus   @default(DRAFT)
+  openedAt                DateTime?       @map("opened_at") @db.Timestamptz
+  closedAt                DateTime?       @map("closed_at") @db.Timestamptz
+  archivedAt              DateTime?       @map("archived_at") @db.Timestamptz
+  createdAt               DateTime        @default(now()) @map("created_at")
+  updatedAt               DateTime        @updatedAt @map("updated_at")
+  createdBy               String          @map("created_by")
+  updatedBy               String          @map("updated_by")
+  statusChangedAt         DateTime        @default(now()) @map("status_changed_at")
+  statusChangedBy         String          @map("status_changed_by")
+  statusChangeReason      String          @map("status_change_reason")
+
+  history                 SessionHistory[]
+
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([applicationWindowStart, applicationWindowEnd])
+  @@index([registrationWindowStart, registrationWindowEnd])
+  @@map("sessions")
+}
+
+model SessionHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  sessionId         String     @map("session_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  session           Session    @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([sessionId, changedAt])
+  @@index([changedAt])
+  @@map("session_history")
 }
