@@ -1,7 +1,7 @@
 # GISI Project Status
 
 **Snapshot date:** 2026-09-16
-**Current phase:** Phase 5, Application Management — complete and approved
+**Current phase:** Phase 6, Admission Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -55,7 +55,7 @@ disagree, `PROJECT_STATUS.md` and Git history govern.
 
 ## Backlog summary
 
-The current backlog contains **75 total tasks: 70 done and 5 pending**.
+The current backlog contains **84 total tasks: 79 done and 5 pending**.
 
 ## Phase 0 status
 
@@ -160,6 +160,24 @@ The following 9 of 9 Phase 5 tasks have been completed and independently verifie
 ## Remaining Phase 5 tasks in dependency order
 
 None - Phase 5 is complete and approved.
+
+## Phase 6 completed tasks
+
+The following 9 of 9 Phase 6 tasks have been completed and independently verified, in order:
+
+1. `define-admission-architecture` — `b425a11` (admission module structure, boundaries, dependencies)
+2. `define-admission-data-model` — `30be632` (Prisma schema for admissions, history, letters)
+3. `establish-admission-persistence` — `30be632` (AdmissionRepository with CRUD operations)
+4. `implement-admission-domain` — `30be632` (status transitions, domain errors, business rules)
+5. `implement-admission-application` — `30be632` (ManageAdmissions service with audit logging)
+6. `implement-admission-api` — `30be632` (8 REST endpoints with /api/v1/admissions versioning)
+7. `implement-admission-audit-logging` — `30be632` (comprehensive audit logging across operations)
+8. `add-admission-tests` — `30be632` (77 domain tests for status transitions and errors)
+9. `review-and-approve-admission` — Final review and approval
+
+## Remaining Phase 6 tasks in dependency order
+
+None - Phase 6 is complete and approved.
 
 ## Known incident
 
