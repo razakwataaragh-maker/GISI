@@ -98,21 +98,25 @@ local migration history from the Prisma schema. It is resolved, not open. See
 the incident note in `docs/architecture/database-migrations.md` and commits
 `459f2f9` and `e877d1d` for details.
 
-## Known issue under investigation
+## Resolved issue
 
 A database-level safeguard preventing Finance Officer roles from ever being
 granted Activation-domain permissions was designed and approved during
-`implement-roles-and-permissions` Stage 1, but investigation on 2026-09-15
-confirmed that the safeguard is absent from the current schema, migrations,
-and live database. The cause is currently unknown and remains under
-investigation.
+`implement-roles-and-permissions` Stage 1, but was absent from the schema and
+migrations. This has been resolved by:
 
-The new task
-`reconcile-iam-role-permission-domain-safeguards` was created to restore or
-replace the missing safeguard with reviewed schema, trigger, migration-test,
-and documentation coverage. It was wired as a dependency of
-`harden-iam-security-controls`, blocking further IAM hardening work until this
-issue is resolved.
+1. Adding the missing `rank` field to the Role model in Prisma schema
+2. Adding the missing BootstrapControl model to Prisma schema
+3. Creating migration `20260916100000_add_iam_domain_safeguards` with:
+   - Rank field addition with index
+   - BootstrapControl table creation
+   - Database trigger enforcing Finance Officer restriction
+4. Adding integration tests for the safeguards
+5. Updating documentation in `docs/architecture/iam-data-model.md`
+
+The safeguard now prevents Finance Officer roles from being granted
+Activation-domain permissions through a database trigger, enforcing the
+business rule that Finance determines eligibility but does not activate students.
 
 ## Key architectural decisions
 

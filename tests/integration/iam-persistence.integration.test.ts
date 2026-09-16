@@ -55,9 +55,10 @@ describe.skipIf(!enabled)('IAM persistence constraints', () => {
         try {
             await expect(
                 prisma.$executeRawUnsafe(
-                    'INSERT INTO "users" ("id", "cognito_subject", "created_at", "updated_at", "status_changed_at", "status_changed_by", "status_change_reason") VALUES ($1, $2, NOW(), NOW(), NOW(), $3, $4)',
+                    'INSERT INTO "users" ("id", "cognito_subject", "status", "created_at", "updated_at", "status_changed_at", "status_changed_by", "status_change_reason") VALUES ($1, $2, $3, NOW(), NOW(), NOW(), $4, $5)',
                     crypto.randomUUID(),
                     `integration-${crypto.randomUUID()}`,
+                    'ACTIVE',
                     'integration-test',
                     'constraint test',
                 ),

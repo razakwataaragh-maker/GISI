@@ -93,3 +93,18 @@ checksums must never be edited manually, and checksum overrides or manual `psql`
 changes must not be used to bypass Prisma integrity checks. For shared,
 staging, or production databases, use a reviewed forward-fix migration instead
 of resetting history.
+
+## Domain safeguards migration
+
+On 2026-09-16, migration `20260916100000_add_iam_domain_safeguards` was created to
+restore missing database-level safeguards that were designed during Phase 1
+IAM implementation but not implemented in the initial migrations. This migration:
+
+- Adds the `rank` field to the Role model for privilege escalation prevention
+- Creates the BootstrapControl table for controlled system-administrator bootstrap
+- Implements a database trigger preventing Finance Officer roles from being
+  granted Activation-domain permissions, enforcing the business rule that
+  Finance determines eligibility but does not activate students
+
+The migration includes integration tests to verify the safeguards function correctly
+and is documented in `docs/architecture/iam-data-model.md`.

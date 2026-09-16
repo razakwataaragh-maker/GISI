@@ -264,3 +264,25 @@ The implementation intentionally uses the approved minimal User shape:
 identity mapping, account status, lifecycle timestamps, status-change actor,
 and status-change reason. Display and institutional identity attributes remain
 deferred until a user-management workflow approves their ownership and fields.
+
+## Domain safeguards
+
+The database implements critical business rule safeguards to enforce separation of duties:
+
+### Rank-based privilege escalation prevention
+- Roles include a `rank` field (integer, default 0) for hierarchical privilege control
+- System-administrator role is assigned rank 9999 (highest privilege)
+- Application-layer checks ensure actors can only grant/revoke roles and permissions at strictly lower ranks
+- This prevents privilege escalation and protects system-administrator authority
+
+### Finance Officer activation restriction
+- A database trigger prevents Finance Officer roles (`key = 'finance-officer'`) from being granted Activation-domain permissions
+- Activation-domain permissions are identified by patterns like `activation.*` or `student.activate*`
+- This enforces the business rule that Finance determines eligibility but does not activate students
+- Non-Finance Officer roles (e.g., Academic Officer) can still be granted activation permissions
+- The safeguard is implemented at the database level in migration `20260916100000_add_iam_domain_safeguards`
+
+### Bootstrap control
+- A `bootstrap_control` table prevents unauthorized system-administrator self-assignment
+- The bootstrap process atomically assigns the system-administrator role and consumes the bootstrap token
+- This ensures initial administrative authority is established through a controlled, auditable process

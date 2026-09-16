@@ -53,6 +53,7 @@ model Role {
   name               String
   description        String?
   status             RoleStatus
+  rank               Int        @default(0)
   createdAt          DateTime   @default(now()) @map("created_at")
   updatedAt          DateTime   @updatedAt @map("updated_at")
   createdBy          String     @map("created_by")
@@ -66,6 +67,7 @@ model Role {
   userAssignments UserRoleAssignment[]
 
   @@index([status])
+  @@index([rank])
   @@map("roles")
 }
 
@@ -150,4 +152,15 @@ model AuditEvent {
   @@index([targetType, targetId, occurredAt])
   @@index([correlationId])
   @@map("audit_events")
+}
+
+model BootstrapControl {
+  id              String   @id
+  consumedAt      DateTime? @map("consumed_at")
+  consumedBy      String?  @map("consumed_by")
+  changeReference String?  @map("change_reference")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("bootstrap_control")
 }
