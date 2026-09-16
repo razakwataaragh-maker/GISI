@@ -14,7 +14,7 @@ import {
 describe('Roles and Permissions Domain', () => {
     describe('PrivilegeEscalationError', () => {
         it('creates error with message', () => {
-            const error = new PrivilegeEscalationError('user.read', 'role-1');
+            const error = new PrivilegeEscalationError('Attempt to grant activation permission to finance officer');
             expect(error.message).toContain('Privilege escalation');
             expect(error.code).toBe('PRIVILEGE_ESCALATION');
         });

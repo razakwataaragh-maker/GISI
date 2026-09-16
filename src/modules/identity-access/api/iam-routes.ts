@@ -157,7 +157,7 @@ async function authenticateRequest(
         '/api/v1/auth/forgot-password',
         '/api/v1/auth/reset-password',
     ];
-    if (publicRoutes.includes(request.routeOptions.url)) {
+    if (request.routeOptions.url && publicRoutes.includes(request.routeOptions.url)) {
         return;
     }
 

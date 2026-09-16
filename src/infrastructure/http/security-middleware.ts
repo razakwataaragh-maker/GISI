@@ -50,8 +50,11 @@ export const securityMiddlewarePlugin = (
         await fastify.register(rateLimit, {
             max: 100, // Max requests per window
             timeWindow: '1 minute',
-            standardHeaders: true,
-            legacyHeaders: false,
+            addHeaders: {
+                'x-ratelimit-limit': true,
+                'x-ratelimit-remaining': true,
+                'x-ratelimit-reset': true,
+            },
             // Different limits for different routes can be configured
             keyGenerator: (request) => {
                 // Use IP address for rate limiting

@@ -22,9 +22,6 @@ describe.skipIf(!enabled)('IAM domain safeguards integration tests', () => {
                     rank: 10,
                     createdBy: 'integration-test',
                     updatedBy: 'integration-test',
-                    statusChangedAt: new Date(),
-                    statusChangedBy: 'integration-test',
-                    statusChangeReason: 'integration test',
                 },
             });
 
