@@ -1,7 +1,7 @@
 # GISI Project Status
 
-**Snapshot date:** 2026-09-13  
-**Current phase:** Phase 1, Identity & Access Management — in progress
+**Snapshot date:** 2026-09-16  
+**Current phase:** Phase 1, Identity & Access Management — nearing completion
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -63,7 +63,7 @@ Project Foundation (Phase 0) is fully complete and approved.
 
 ## Phase 1 completed tasks
 
-The following **8 of 13** Phase 1 tasks have been completed and independently
+The following **12 of 13** Phase 1 tasks have been completed and independently
 verified, in order:
 
 1. `define-iam-architecture` — `e7b8fc6`
@@ -74,6 +74,10 @@ verified, in order:
 6. `implement-authentication` — `e64a686`
 7. `implement-user-management` — `07cf480`
 8. `implement-roles-and-permissions` — `0e25bd4`
+9. `implement-iam-api-endpoints` — `fc6193c` (added missing auth endpoints)
+10. `implement-iam-audit-logging` — already comprehensively implemented across all IAM services
+11. `harden-iam-security-controls` — `42b43ef` (rate limiting, CORS, security headers, payload limits)
+12. `add-iam-tests` — `23bb4f3` (domain layer tests to improve coverage)
 
 The separately tracked foundation task `implement-audit-writer` is also
 complete in commit `10f8f42`. The latest corrective commits associated with
@@ -83,13 +87,9 @@ verified implementation history.
 
 ## Remaining Phase 1 tasks in dependency order
 
-The five remaining pending Phase 1 tasks are:
+The one remaining pending Phase 1 task is:
 
-1. `implement-iam-api-endpoints`
-2. `implement-iam-audit-logging`
-3. `harden-iam-security-controls`
-4. `add-iam-tests`
-5. `review-and-approve-iam`
+1. `review-and-approve-iam`
 
 ## Known incident
 
