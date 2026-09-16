@@ -41,6 +41,15 @@ enum SessionStatus {
   ARCHIVED
 }
 
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  INFORMATION_REQUESTED
+  APPROVED
+  REJECTED
+}
+
 enum StudentStatus {
   ACTIVE
   INACTIVE
@@ -218,6 +227,7 @@ model Student {
   statusHistory     StudentStatusHistory[]
   profileHistory    StudentProfileHistory[]
   documents         StudentDocument[]
+  applications      Application[]
 
   @@index([studentNumber])
   @@index([status])
@@ -304,6 +314,7 @@ model Programme {
 
   versions          ProgrammeVersion[]
   history           ProgrammeHistory[]
+  applications      Application[]
 
   @@index([programmeCode])
   @@index([status])
@@ -374,6 +385,7 @@ model Session {
   statusChangeReason      String          @map("status_change_reason")
 
   history                 SessionHistory[]
+  applications            Application[]
 
   @@index([status])
   @@index([startDate])
@@ -400,4 +412,78 @@ model SessionHistory {
   @@index([sessionId, changedAt])
   @@index([changedAt])
   @@map("session_history")
+}
+
+model Application {
+  id                    String             @id @default(uuid()) @db.Uuid
+  studentId             String             @map("student_id") @db.Uuid
+  programmeId           String             @map("programme_id") @db.Uuid
+  sessionId             String             @map("session_id") @db.Uuid
+  status                ApplicationStatus  @default(DRAFT)
+  personalStatement     String?            @map("personal_statement") @db.Text
+  academicHistory       String?            @map("academic_history") @db.Text
+  submittedAt           DateTime?          @map("submitted_at") @db.Timestamptz
+  decisionDate          DateTime?          @map("decision_date") @db.Timestamptz
+  decisionReason        String?            @map("decision_reason") @db.Text
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  createdBy             String             @map("created_by")
+  updatedBy             String             @map("updated_by")
+  statusChangedAt       DateTime            @default(now()) @map("status_changed_at")
+  statusChangedBy       String             @map("status_changed_by")
+  statusChangeReason    String             @map("status_change_reason")
+
+  student               Student            @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  programme             Programme          @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  session               Session            @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  history               ApplicationHistory[]
+  documents             ApplicationDocument[]
+
+  @@index([studentId])
+  @@index([programmeId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([decisionDate])
+  @@map("applications")
+}
+
+model ApplicationHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  applicationId      String     @map("application_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([applicationId, changedAt])
+  @@index([changedAt])
+  @@map("application_history")
+}
+
+model ApplicationDocument {
+  id                String     @id @default(uuid()) @db.Uuid
+  applicationId     String     @map("application_id") @db.Uuid
+  documentType      String     @map("document_type")
+  fileName          String     @map("file_name")
+  storagePath       String     @map("storage_path")
+  fileSize          Int        @map("file_size")
+  mimeType          String     @map("mime_type")
+  uploadedAt        DateTime   @map("uploaded_at") @db.Timestamptz
+  uploadedBy        String     @map("uploaded_by")
+  uploadReason      String?    @map("upload_reason") @db.Text
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([applicationId, documentType])
+  @@index([uploadedAt])
+  @@map("application_documents")
 }
