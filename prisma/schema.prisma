@@ -28,6 +28,12 @@ enum UserRoleAssignmentStatus {
   REVOKED
 }
 
+enum ProgrammeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum StudentStatus {
   ACTIVE
   INACTIVE
@@ -268,4 +274,73 @@ model StudentDocument {
   @@index([studentId, documentType])
   @@index([uploadedAt])
   @@map("student_documents")
+}
+
+model Programme {
+  id                String              @id @default(uuid()) @db.Uuid
+  programmeCode     String              @unique @map("programme_code")
+  name              String              @map("name")
+  description       String?             @map("description") @db.Text
+  status            ProgrammeStatus      @default(DRAFT)
+  currentVersion    Int                 @default(1) @map("current_version")
+  effectiveFrom     DateTime?           @map("effective_from") @db.Timestamptz
+  effectiveTo       DateTime?           @map("effective_to") @db.Timestamptz
+  publishedAt       DateTime?           @map("published_at") @db.Timestamptz
+  archivedAt        DateTime?           @map("archived_at") @db.Timestamptz
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  createdBy         String              @map("created_by")
+  updatedBy         String              @map("updated_by")
+  statusChangedAt   DateTime            @default(now()) @map("status_changed_at")
+  statusChangedBy   String              @map("status_changed_by")
+  statusChangeReason String             @map("status_change_reason")
+
+  versions          ProgrammeVersion[]
+  history           ProgrammeHistory[]
+
+  @@index([programmeCode])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([effectiveFrom, effectiveTo])
+  @@map("programmes")
+}
+
+model ProgrammeVersion {
+  id                String     @id @default(uuid()) @db.Uuid
+  programmeId       String     @map("programme_id") @db.Uuid
+  versionNumber     Int        @map("version_number")
+  programmeCode     String     @map("programme_code")
+  name              String     @map("name")
+  description       String?    @map("description") @db.Text
+  effectiveFrom     DateTime?  @map("effective_from") @db.Timestamptz
+  effectiveTo       DateTime?  @map("effective_to") @db.Timestamptz
+  publishedAt       DateTime?  @map("published_at") @db.Timestamptz
+  createdAt         DateTime   @default(now()) @map("created_at")
+  createdBy         String     @map("created_by")
+
+  programme         Programme  @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([programmeId, versionNumber])
+  @@index([programmeId, versionNumber])
+  @@index([programmeCode])
+  @@map("programme_versions")
+}
+
+model ProgrammeHistory {
+  id                String              @id @default(uuid()) @db.Uuid
+  programmeId       String              @map("programme_id") @db.Uuid
+  changedField      String              @map("changed_field")
+  previousValue     String?             @map("previous_value")
+  newValue          String?             @map("new_value")
+  changedAt         DateTime            @map("changed_at")
+  changedBy         String              @map("changed_by")
+  changeReason      String              @map("change_reason")
+  changeReference   String?             @map("change_reference")
+  createdAt         DateTime            @default(now()) @map("created_at")
+
+  programme         Programme           @relation(fields: [programmeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([programmeId, changedAt])
+  @@index([changedAt])
+  @@map("programme_history")
 }
