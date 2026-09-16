@@ -1,7 +1,7 @@
 # GISI Project Status
 
 **Snapshot date:** 2026-09-16  
-**Current phase:** Phase 1, Identity & Access Management — nearing completion
+**Current phase:** Phase 1, Identity & Access Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -63,8 +63,7 @@ Project Foundation (Phase 0) is fully complete and approved.
 
 ## Phase 1 completed tasks
 
-The following **12 of 13** Phase 1 tasks have been completed and independently
-verified, in order:
+The following 13 of 13 Phase 1 tasks have been completed and independently verified, in order:
 
 1. `define-iam-architecture` — `e7b8fc6`
 2. `define-authentication-architecture` — `2e8c99c`
@@ -78,6 +77,7 @@ verified, in order:
 10. `implement-iam-audit-logging` — already comprehensively implemented across all IAM services
 11. `harden-iam-security-controls` — `42b43ef` (rate limiting, CORS, security headers, payload limits)
 12. `add-iam-tests` — `23bb4f3` (domain layer tests to improve coverage)
+13. `review-and-approve-iam` — `c92c0a5` (final review, TypeScript fixes, approval)
 
 The separately tracked foundation task `implement-audit-writer` is also
 complete in commit `10f8f42`. The latest corrective commits associated with
@@ -87,9 +87,7 @@ verified implementation history.
 
 ## Remaining Phase 1 tasks in dependency order
 
-The one remaining pending Phase 1 task is:
-
-1. `review-and-approve-iam`
+None - Phase 1 is complete and approved.
 
 ## Known incident
 
