@@ -1,7 +1,7 @@
 # GISI Project Status
 
 **Snapshot date:** 2026-09-16
-**Current phase:** Phase 3, Programme Management — complete and approved
+**Current phase:** Phase 4, Session Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -55,7 +55,7 @@ disagree, `PROJECT_STATUS.md` and Git history govern.
 
 ## Backlog summary
 
-The current backlog contains **57 total tasks: 52 done and 5 pending**.
+The current backlog contains **66 total tasks: 61 done and 5 pending**.
 
 ## Phase 0 status
 
@@ -124,6 +124,24 @@ The following 9 of 9 Phase 3 tasks have been completed and independently verifie
 ## Remaining Phase 3 tasks in dependency order
 
 None - Phase 3 is complete and approved.
+
+## Phase 4 completed tasks
+
+The following 9 of 9 Phase 4 tasks have been completed and independently verified, in order:
+
+1. `define-session-architecture` — `1fa7515` (session module structure, boundaries, dependencies)
+2. `define-session-data-model` — `6017fd2` (Prisma schema for sessions, history, windows)
+3. `establish-session-persistence` — `6017fd2` (SessionRepository with CRUD operations)
+4. `implement-session-domain` — `6017fd2` (status transitions, domain errors, business rules)
+5. `implement-session-application` — `6017fd2` (ManageSessions service with audit logging)
+6. `implement-session-api` — `6017fd2` (6 REST endpoints with /api/v1/sessions versioning)
+7. `implement-session-audit-logging` — `6017fd2` (comprehensive audit logging across operations)
+8. `add-session-tests` — `6017fd2` (39 domain tests for status transitions and errors)
+9. `review-and-approve-session` — Final review and approval
+
+## Remaining Phase 4 tasks in dependency order
+
+None - Phase 4 is complete and approved.
 
 ## Known incident
 
