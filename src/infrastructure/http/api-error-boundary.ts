@@ -13,6 +13,8 @@ export const apiErrorCodes = [
     'DEPENDENCY_ERROR',
     'PERSISTENCE_ERROR',
     'INTERNAL_ERROR',
+    'TOO_MANY_REQUESTS',
+    'PAYLOAD_TOO_LARGE',
 ] as const;
 
 export type ApiErrorCode = (typeof apiErrorCodes)[number];
@@ -29,6 +31,8 @@ const statusByCode: Record<ApiErrorCode, number> = {
     DEPENDENCY_ERROR: 500,
     PERSISTENCE_ERROR: 500,
     INTERNAL_ERROR: 500,
+    TOO_MANY_REQUESTS: 429,
+    PAYLOAD_TOO_LARGE: 413,
 };
 
 const messageByCode: Record<ApiErrorCode, string> = {
@@ -42,6 +46,8 @@ const messageByCode: Record<ApiErrorCode, string> = {
     DEPENDENCY_ERROR: 'Dependency unavailable',
     PERSISTENCE_ERROR: 'Persistence operation failed',
     INTERNAL_ERROR: 'Internal server error',
+    TOO_MANY_REQUESTS: 'Too many requests',
+    PAYLOAD_TOO_LARGE: 'Request body too large',
 };
 
 export class ApiError extends Error {
@@ -148,8 +154,12 @@ function classifyError(error: unknown): {
             return { code: 'NOT_FOUND', details: [] };
         case 409:
             return { code: 'CONFLICT', details: [] };
+        case 413:
+            return { code: 'PAYLOAD_TOO_LARGE', details: [] };
         case 422:
             return { code: 'VALIDATION_ERROR', details: [] };
+        case 429:
+            return { code: 'TOO_MANY_REQUESTS', details: [] };
         default:
             return { code: 'INTERNAL_ERROR', details: [] };
     }
