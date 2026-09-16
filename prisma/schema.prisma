@@ -28,6 +28,14 @@ enum UserRoleAssignmentStatus {
   REVOKED
 }
 
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  GRADUATED
+  WITHDRAWN
+}
+
 model User {
   id                String     @id @default(uuid()) @db.Uuid
   cognitoSubject    String     @unique @map("cognito_subject")
@@ -163,4 +171,101 @@ model BootstrapControl {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("bootstrap_control")
+}
+
+model Student {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentNumber     String     @unique @map("student_number")
+  firstName         String     @map("first_name")
+  lastName          String     @map("last_name")
+  dateOfBirth       DateTime?  @map("date_of_birth")
+  gender            String?
+  email             String?
+  phone             String?
+  nationalId        String?    @map("national_id")
+  passportNumber    String?    @map("passport_number")
+  addressLine1      String?    @map("address_line1")
+  addressLine2      String?    @map("address_line2")
+  city              String?
+  state             String?
+  postalCode        String?    @map("postal_code")
+  country           String?
+  emergencyContactName String? @map("emergency_contact_name")
+  emergencyContactPhone String? @map("emergency_contact_phone")
+  emergencyContactRelationship String? @map("emergency_contact_relationship")
+  status            StudentStatus
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  createdBy         String     @map("created_by")
+  updatedBy         String     @map("updated_by")
+  statusChangedAt   DateTime   @map("status_changed_at")
+  statusChangedBy   String     @map("status_changed_by")
+  statusChangeReason String    @map("status_change_reason")
+
+  statusHistory     StudentStatusHistory[]
+  profileHistory    StudentProfileHistory[]
+  documents         StudentDocument[]
+
+  @@index([studentNumber])
+  @@index([status])
+  @@index([lastName, firstName])
+  @@map("students")
+}
+
+model StudentStatusHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentId         String     @map("student_id") @db.Uuid
+  previousStatus    StudentStatus @map("previous_status")
+  newStatus         StudentStatus @map("new_status")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([studentId, changedAt])
+  @@index([changedAt])
+  @@map("student_status_history")
+}
+
+model StudentProfileHistory {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentId         String     @map("student_id") @db.Uuid
+  changedField      String     @map("changed_field")
+  previousValue     String?    @map("previous_value")
+  newValue          String?    @map("new_value")
+  changedAt         DateTime   @map("changed_at")
+  changedBy         String     @map("changed_by")
+  changeReason      String     @map("change_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([studentId, changedAt])
+  @@index([changedAt])
+  @@map("student_profile_history")
+}
+
+model StudentDocument {
+  id                String     @id @default(uuid()) @db.Uuid
+  studentId         String     @map("student_id") @db.Uuid
+  documentType      String     @map("document_type")
+  fileName          String     @map("file_name")
+  storagePath       String     @map("storage_path")
+  fileSize          Int        @map("file_size")
+  mimeType          String     @map("mime_type")
+  uploadedAt        DateTime   @map("uploaded_at")
+  uploadedBy        String     @map("uploaded_by")
+  uploadReason      String?    @map("upload_reason")
+  changeReference   String?    @map("change_reference")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([studentId, documentType])
+  @@index([uploadedAt])
+  @@map("student_documents")
 }
