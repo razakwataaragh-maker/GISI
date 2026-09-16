@@ -1,7 +1,7 @@
 # GISI Project Status
 
 **Snapshot date:** 2026-09-16
-**Current phase:** Phase 4, Session Management — complete and approved
+**Current phase:** Phase 5, Application Management — complete and approved
 **Source of backlog state:** `todos` and `todo_deps` tables
 
 This file is a point-in-time handoff snapshot. The `todos` table remains the
@@ -55,7 +55,7 @@ disagree, `PROJECT_STATUS.md` and Git history govern.
 
 ## Backlog summary
 
-The current backlog contains **66 total tasks: 61 done and 5 pending**.
+The current backlog contains **75 total tasks: 70 done and 5 pending**.
 
 ## Phase 0 status
 
@@ -142,6 +142,24 @@ The following 9 of 9 Phase 4 tasks have been completed and independently verifie
 ## Remaining Phase 4 tasks in dependency order
 
 None - Phase 4 is complete and approved.
+
+## Phase 5 completed tasks
+
+The following 9 of 9 Phase 5 tasks have been completed and independently verified, in order:
+
+1. `define-application-architecture` — `1dd5f75` (application module structure, boundaries, dependencies)
+2. `define-application-data-model` — `f39f643` (Prisma schema for applications, history, documents)
+3. `establish-application-persistence` — `f39f643` (ApplicationRepository with CRUD operations)
+4. `implement-application-domain` — `f39f643` (status transitions, domain errors, business rules)
+5. `implement-application-application` — `f39f643` (ManageApplications service with audit logging)
+6. `implement-application-api` — `f39f643` (12 REST endpoints with /api/v1/applications versioning)
+7. `implement-application-audit-logging` — `f39f643` (comprehensive audit logging across operations)
+8. `add-application-tests` — `f39f643` (98 domain tests for status transitions and errors)
+9. `review-and-approve-application` — Final review and approval
+
+## Remaining Phase 5 tasks in dependency order
+
+None - Phase 5 is complete and approved.
 
 ## Known incident
 
