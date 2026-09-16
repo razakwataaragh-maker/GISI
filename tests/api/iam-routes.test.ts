@@ -4,6 +4,9 @@ import { apiErrorBoundaryPlugin } from '../../src/infrastructure/http/api-error-
 import { correlationIdPlugin } from '../../src/infrastructure/http/correlation-id.js';
 import { iamRoutesPlugin } from '../../src/modules/identity-access/api/iam-routes.js';
 import type { IamRoutesDependencies } from '../../src/modules/identity-access/api/iam-routes.js';
+import type { LogoutUser } from '../../src/modules/identity-access/application/logout-user.js';
+import type { RefreshToken } from '../../src/modules/identity-access/application/refresh-token.js';
+import type { PasswordReset } from '../../src/modules/identity-access/application/password-reset.js';
 import { createLogger } from '../../src/infrastructure/logging/logger.js';
 
 const principal = {
@@ -57,6 +60,23 @@ function dependencies(authorized = true): IamRoutesDependencies {
         authorization: {
             authorize: vi.fn().mockResolvedValue(authorized),
         },
+        logoutUser: {
+            execute: vi.fn().mockResolvedValue({ ok: true }),
+        } as unknown as LogoutUser,
+        refreshToken: {
+            execute: vi.fn().mockResolvedValue({
+                ok: true,
+                context: {
+                    principal,
+                    assurance: 'cognito-verified',
+                    authenticatedAt: new Date('2026-01-01T00:00:00.000Z'),
+                },
+            }),
+        } as unknown as RefreshToken,
+        passwordReset: {
+            forgotPassword: vi.fn().mockResolvedValue({ ok: true }),
+            resetPassword: vi.fn().mockResolvedValue({ ok: true }),
+        } as unknown as PasswordReset,
     };
 }
 
@@ -113,6 +133,80 @@ describe('IAM API routes', () => {
 
         expect(response.statusCode).toBe(401);
         expect(response.json()).toMatchObject({ code: 'UNAUTHORIZED' });
+    });
+
+    it('returns the authenticated principal from POST /api/v1/auth/refresh', async () => {
+        const routeDependencies = dependencies();
+        app = await application(routeDependencies);
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/auth/refresh',
+            payload: { refreshToken: 'refresh-token' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ principal });
+    });
+
+    it('returns UNAUTHORIZED when POST /api/v1/auth/refresh fails', async () => {
+        const routeDependencies = dependencies();
+        routeDependencies.refreshToken.execute = vi.fn().mockResolvedValue({
+            ok: false,
+            failure: { code: 'UNAUTHORIZED', reason: 'EXPIRED_REFRESH_TOKEN' },
+        });
+        app = await application(routeDependencies);
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/auth/refresh',
+            payload: { refreshToken: 'expired-refresh-token' },
+        });
+
+        expect(response.statusCode).toBe(401);
+        expect(response.json()).toMatchObject({ code: 'UNAUTHORIZED' });
+    });
+
+    it('returns success from POST /api/v1/auth/logout', async () => {
+        const routeDependencies = dependencies();
+        app = await application(routeDependencies);
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/auth/logout',
+            headers: { authorization: 'Bearer verified-token' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ message: 'Logged out successfully' });
+    });
+
+    it('returns success from POST /api/v1/auth/forgot-password', async () => {
+        const routeDependencies = dependencies();
+        app = await application(routeDependencies);
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/auth/forgot-password',
+            payload: { email: 'user@example.com' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ message: 'Password reset email sent' });
+    });
+
+    it('returns success from POST /api/v1/auth/reset-password', async () => {
+        const routeDependencies = dependencies();
+        app = await application(routeDependencies);
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/auth/reset-password',
+            payload: { token: 'reset-token', newPassword: 'NewPassword123' },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ message: 'Password reset successfully' });
     });
 
     it('returns the authenticated user from GET /api/v1/me', async () => {

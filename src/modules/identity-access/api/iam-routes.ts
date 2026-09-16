@@ -8,6 +8,9 @@ import { requestCorrelationId } from '../../../infrastructure/http/correlation-i
 import type { AuthenticateUser } from '../application/authenticate-user.js';
 import type { ManageRolesAndPermissions } from '../application/manage-roles-and-permissions.js';
 import type { ManageUsers } from '../application/manage-users.js';
+import type { LogoutUser } from '../application/logout-user.js';
+import type { RefreshToken } from '../application/refresh-token.js';
+import type { PasswordReset } from '../application/password-reset.js';
 import type {
     AuthenticationContext,
     AuthenticationPrincipal,
@@ -33,6 +36,9 @@ export interface IamRoutesDependencies {
     readonly manageUsers: ManageUsers;
     readonly manageRolesAndPermissions: ManageRolesAndPermissions;
     readonly authorization: RolesAndPermissionsAuthorization;
+    readonly logoutUser: LogoutUser;
+    readonly refreshToken: RefreshToken;
+    readonly passwordReset: PasswordReset;
 }
 
 type ProtectedRequest = FastifyRequest & {
@@ -64,6 +70,19 @@ interface UserQuery {
 
 interface LoginBody {
     readonly accessToken: string;
+}
+
+interface RefreshTokenBody {
+    readonly refreshToken: string;
+}
+
+interface ForgotPasswordBody {
+    readonly email: string;
+}
+
+interface ResetPasswordBody {
+    readonly token: string;
+    readonly newPassword: string;
 }
 
 interface ProvisionUserBody {
@@ -132,7 +151,13 @@ async function authenticateRequest(
     request: FastifyRequest,
     dependencies: IamRoutesDependencies,
 ): Promise<void> {
-    if (request.routeOptions.url === '/api/v1/auth/login') {
+    const publicRoutes = [
+        '/api/v1/auth/login',
+        '/api/v1/auth/refresh',
+        '/api/v1/auth/forgot-password',
+        '/api/v1/auth/reset-password',
+    ];
+    if (publicRoutes.includes(request.routeOptions.url)) {
         return;
     }
 
@@ -202,6 +227,9 @@ function mapApplicationError(error: unknown): never {
         INVALID_ROLE_STATUS: 'BUSINESS_RULE_VIOLATION',
         PRIVILEGE_ESCALATION: 'FORBIDDEN',
         BOOTSTRAP_ALREADY_CONSUMED: 'CONFLICT',
+        INVALID_REFRESH_TOKEN: 'UNAUTHORIZED',
+        EXPIRED_REFRESH_TOKEN: 'UNAUTHORIZED',
+        INACTIVE_ACCOUNT: 'FORBIDDEN',
     };
 
     const mapped = mapping[code];
@@ -250,6 +278,100 @@ export const iamRoutesPlugin = (
                 return {
                     principal: principalResponse(result.context.principal),
                 };
+            },
+        );
+
+        fastify.post<{ Body: RefreshTokenBody }>(
+            '/api/v1/auth/refresh',
+            {
+                schema: {
+                    body: {
+                        type: 'object',
+                        required: ['refreshToken'],
+                        additionalProperties: false,
+                        properties: {
+                            refreshToken: { type: 'string', minLength: 1 },
+                        },
+                    },
+                },
+            },
+            async (request) => {
+                const result = await dependencies.refreshToken.execute({
+                    refreshToken: request.body.refreshToken,
+                    correlationId: requestCorrelationId(request),
+                });
+                if (!result.ok) {
+                    throw new ApiError(result.failure.code);
+                }
+                return {
+                    principal: principalResponse(result.context.principal),
+                };
+            },
+        );
+
+        fastify.post('/api/v1/auth/logout', async (request) => {
+            const protectedRequestValue = protectedRequest(request);
+            const result = await dependencies.logoutUser.execute({
+                principal: protectedRequestValue.authenticationContext.principal,
+                correlationId: requestCorrelationId(request),
+            });
+            if (!result.ok) {
+                throw new ApiError(result.failure.code);
+            }
+            return { message: 'Logged out successfully' };
+        });
+
+        fastify.post<{ Body: ForgotPasswordBody }>(
+            '/api/v1/auth/forgot-password',
+            {
+                schema: {
+                    body: {
+                        type: 'object',
+                        required: ['email'],
+                        additionalProperties: false,
+                        properties: {
+                            email: { type: 'string', format: 'email' },
+                        },
+                    },
+                },
+            },
+            async (request) => {
+                const result = await dependencies.passwordReset.forgotPassword({
+                    email: request.body.email,
+                    correlationId: requestCorrelationId(request),
+                });
+                if (!result.ok) {
+                    throw new ApiError(result.failure.code);
+                }
+                return { message: 'Password reset email sent' };
+            },
+        );
+
+        fastify.post<{ Body: ResetPasswordBody }>(
+            '/api/v1/auth/reset-password',
+            {
+                schema: {
+                    body: {
+                        type: 'object',
+                        required: ['token', 'newPassword'],
+                        additionalProperties: false,
+                        properties: {
+                            token: { type: 'string', minLength: 1 },
+                            newPassword: { type: 'string', minLength: 8 },
+                        },
+                    },
+                },
+            },
+            async (request) => {
+                const result = await dependencies.passwordReset.resetPassword({
+                    token: request.body.token,
+                    newPassword: request.body.newPassword,
+                    correlationId: requestCorrelationId(request),
+                });
+                if (!result.ok) {
+                    throw new ApiError(result.failure.code);
+                }
+                return { message: 'Password reset successfully' };
             },
         );
 
